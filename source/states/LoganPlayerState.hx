@@ -13,12 +13,17 @@ using extensions.FlxObjectExt;
 
 class LoganPlayerState extends FlxState {
 
-	var bufferMS:Float = 200; // pre is easy...
+	// milliseconds the player can be early
+	var bufferMS:Float = 100;
 
-	var postBufferMS:Float = 100; // post is a little harder as it has to act after the beat
+	// milliseconds the player can be late
+	var postBufferMS:Float = 100;
 
 	var actions:Actions;
 	var inputBuffer:Map<FlxActionDigital, Float> = new Map();
+
+	var beatTime:Float;
+	var beatAwaitingProcessing:Bool;
 
 	var player:Ship;
 	var playerLane:Int = 0;
@@ -36,7 +41,7 @@ class LoganPlayerState extends FlxState {
 	override public function create()
 	{
 		super.create();
-		FmodManager.PlaySong(FmodSongs.LetsGo);
+		FmodManager.PlaySong(FmodSongs.Song2);
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 
 		actions = new Actions();
@@ -54,14 +59,11 @@ class LoganPlayerState extends FlxState {
 
 	private function beat() {
 		debugSpeaker.animation.play("sound", true);
-
-		haxe.Timer.delay(checkInput, Std.int(200));
-		// checkInput();
+		beatTime = Date.now().getTime();
+		beatAwaitingProcessing = true;
 	}
 
-	private function checkInput() {
-		var timestamp = Date.now().getTime();
-
+	private function checkInput(timestamp:Float):Bool {
 		if (inputBuffer.exists(actions.left)) {
 			if (timestamp - inputBuffer[actions.left] < bufferMS) {
 				playerLane--;
@@ -69,6 +71,7 @@ class LoganPlayerState extends FlxState {
 			} else {
 				player.color = FlxColor.RED;
 			}
+			resetBeatVars();
 		}
 
 		if (inputBuffer.exists(actions.right)) {
@@ -78,11 +81,17 @@ class LoganPlayerState extends FlxState {
 			} else {
 				player.color = FlxColor.RED;
 			}
+			resetBeatVars();
 		}
 
-		inputBuffer.clear();
+		// return false if still awaiting processing
+		return !beatAwaitingProcessing;
+	}
 
+	private function resetBeatVars() {
+		inputBuffer.clear();
 		alignPlayerToLane();
+		beatAwaitingProcessing = false;
 	}
 
 	private function alignPlayerToLane() {
@@ -94,24 +103,41 @@ class LoganPlayerState extends FlxState {
 		var timestamp = Date.now().getTime();
 		FmodManager.Update();
 
-		if (actions.left.check() && !inputBuffer.exists(actions.left)) {
-			inputBuffer[actions.left] = timestamp;
-			player.color = FlxColor.BLUE;
-		}
+		if (beatAwaitingProcessing) {
+			if (checkInput(beatTime)) {
+				// input was handled, just bail
+				return;
+			}
 
-		if (actions.right.check() && !inputBuffer.exists(actions.right)) {
-			inputBuffer[actions.right] = timestamp;
-			player.color = FlxColor.BLUE;
-		}
+			if (actions.left.check()) {
+				playerLane--;
+				player.color = FlxColor.YELLOW;
+				beatAwaitingProcessing = false;
+				resetBeatVars();
+			}
 
-		if (actions.up.check() && !inputBuffer.exists(actions.up)) {
-			inputBuffer[actions.up] = timestamp;
-			player.color = FlxColor.BLUE;
-		}
+			if (actions.right.check()) {
+				playerLane++;
+				player.color = FlxColor.YELLOW;
+				beatAwaitingProcessing = false;
+				resetBeatVars();
+			}
 
-		if (actions.down.check() && !inputBuffer.exists(actions.down)) {
-			inputBuffer[actions.down] = timestamp;
-			player.color = FlxColor.BLUE;
+			if (beatAwaitingProcessing && timestamp - beatTime > postBufferMS) {
+				// hasn't processed beat yet, AND it's been past the buffer
+				// count is as missed and move on
+				resetBeatVars();
+			}
+		} else {
+			if (actions.left.check() && !inputBuffer.exists(actions.left)) {
+				inputBuffer[actions.left] = timestamp;
+				player.color = FlxColor.BLUE;
+			}
+
+			if (actions.right.check() && !inputBuffer.exists(actions.right)) {
+				inputBuffer[actions.right] = timestamp;
+				player.color = FlxColor.BLUE;
+			}
 		}
 	}
 
