@@ -26,7 +26,7 @@ class LoadFmodState extends FlxState {
             #elseif tristan
             FlxG.switchState(new SplashScreenState());
             #elseif jake
-            FlxG.switchState(new SplashScreenState());
+            FlxG.switchState(new JakeState());
             #elseif tanner
             FlxG.switchState(new SplashScreenState());
             #elseif mike
