@@ -1,0 +1,10 @@
+{
+    "name": "Level 0",
+    "beatEvents": [{
+        "beat": 15,
+        "speed": 0.5,
+        "ship": {
+            "x": 0
+        }
+    }]
+}
