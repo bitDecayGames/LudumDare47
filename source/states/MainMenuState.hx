@@ -26,7 +26,7 @@ class MainMenuState extends FlxUIState {
         _txtTitle.setPosition(FlxG.width/2, FlxG.height/4);
         _txtTitle.size = 40;
         _txtTitle.alignment = FlxTextAlign.CENTER;
-        _txtTitle.text = "Game Title";
+        _txtTitle.text = "Millenial Macarena Motorway";
         
         add(_txtTitle);
 
