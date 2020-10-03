@@ -1,0 +1,11 @@
+# Builds
+/export
+
+# haxefmod integration
+fmod/CachedHaxeConstantsOutputLocation
+
+# FMOD
+fmod/.cache/
+
+# analytics auth token
+assets/data/analytics_token.txt
