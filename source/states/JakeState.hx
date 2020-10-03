@@ -67,20 +67,15 @@ class JakeState extends FlxState {
 	override public function create()
 	{
 		super.create();
+		FlxG.debugger.visible = true;
 		FmodManager.PlaySong(FmodSongs.LetsGo);
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 
 		// Debug for testing purposes
-		beatEvents.push(new BeatEvent(15, 0.5, new Ship(0, 0)));
-		beatEvents.push(new BeatEvent(13, 1.0, new Ship(100, 0)));
-		beatEvents.push(new BeatEvent(14, 1.0, new Ship(200, 0)));
-		beatEvents.push(new BeatEvent(15, 1.0, new Ship(100, 0)));
-		beatEvents.push(new BeatEvent(16, 1.0, new Ship(200, 0)));
-		beatEvents.push(new BeatEvent(17, 1.0, new Ship(100, 0)));
-		beatEvents.push(new BeatEvent(18, 1.0, new Ship(200, 0)));
-		beatEvents.push(new BeatEvent(19, 1.0, new Ship(100, 0)));
-		beatEvents.push(new BeatEvent(15, 2.0, new Ship(250, 0)));
-		beatEvents.push(new BeatEvent(16, 3.0, new Ship(300, 0)));
+		for (i in 0...100) {
+			var ship = new Ship(laneCoords[i % 5], 0);
+			beatEvents.push(new BeatEvent(i * i, i * 0.1, ship));
+		}
 		parse(beatEvents);
 		add(beaters);
 
