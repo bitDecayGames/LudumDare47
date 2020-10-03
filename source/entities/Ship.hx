@@ -11,13 +11,18 @@ class Ship extends FlxSprite {
 	public var startY:Float = 0;
 	public var beat:Int = 0;
 
-	var hitbox = new FlxPoint(80, 115);
+	var hitbox = new FlxPoint(80, 110);
 
-	public function new(x:Float, y:Float) {
+	public function new(x:Float, y:Float, player:Bool) {
 		super(x, y);
-		loadGraphic(AssetPaths.player__png, true, 90, 135);
+		if (player) {
+			loadGraphic(AssetPaths.player__png, true, 90, 135, true);
+			offset.set((width - hitbox.x) / 2, 5);
+		} else {
+			loadGraphic(AssetPaths.ship0__png, true, 90, 135);
+			offset.set((width - hitbox.x) / 2, height - hitbox.y);
+		}
 
-		offset.set((width - hitbox.x) / 2, (height - hitbox.y) / 2);
 		setSize(hitbox.x, hitbox.y);
 		this.setMidpoint(x, y);
 

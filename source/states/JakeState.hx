@@ -68,20 +68,77 @@ class JakeState extends FlxState {
 	{
 		super.create();
 		FlxG.debugger.visible = true;
-		FmodManager.PlaySong(FmodSongs.LetsGo);
+		FmodManager.PlaySong(FmodSongs.Song2);
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 
-		// Debug for testing purposes
-		for (i in 0...100) {
-			var ship = new Ship(laneCoords[i % 5], 0);
-			beatEvents.push(new BeatEvent(i * i, i * 0.1, ship));
+		#if !FLX_NO_DEBUG
+		var y = 0;
+		while (y < FlxG.height) {
+			var divider = new FlxSprite(FlxG.width / 2, y, AssetPaths.divider__png);
+			divider.scale.set(FlxG.width / divider.width, 1);
+			add(divider);
+			if (y == focusBeat * pixPerBeat) {
+				divider.alpha = 1;
+			} else {
+				divider.alpha = 0.5;
+			}
+			y += pixPerBeat;
 		}
+		#end
+
+		// Debug for testing purposes
+		// for (i in 0...100) {
+		// 	var ship = new Ship(laneCoords[i % 5], 0, false);
+		// 	beatEvents.push(new BeatEvent(i * i, i * 0.1, ship));
+		// }
+
+		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[0], 0, false)));
+		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[1], 0, false)));
+		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[3], 0, false)));
+		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[4], 0, false)));
+
+		beatEvents.push(new BeatEvent(14, 1, new Ship(laneCoords[2], 0, false)));
+
+		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[1], 0, false)));
+		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[2], 0, false)));
+		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[3], 0, false)));
+		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[4], 0, false)));
+
+		beatEvents.push(new BeatEvent(24, 1, new Ship(laneCoords[0], 0, false)));
+		beatEvents.push(new BeatEvent(25, 1, new Ship(laneCoords[1], 0, false)));
+		beatEvents.push(new BeatEvent(26, 1, new Ship(laneCoords[2], 0, false)));
+		beatEvents.push(new BeatEvent(27, 1, new Ship(laneCoords[3], 0, false)));
+
+		beatEvents.push(new BeatEvent(33, 1, new Ship(laneCoords[4], 0, false)));
+		beatEvents.push(new BeatEvent(34, 1, new Ship(laneCoords[3], 0, false)));
+		beatEvents.push(new BeatEvent(35, 1, new Ship(laneCoords[2], 0, false)));
+		beatEvents.push(new BeatEvent(36, 1, new Ship(laneCoords[1], 0, false)));
+
+		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[0], 0, false)));
+		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[1], 0, false)));
+		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[3], 0, false)));
+		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[4], 0, false)));
+
+		beatEvents.push(new BeatEvent(47, 1, new Ship(laneCoords[1], 0, false)));
+		beatEvents.push(new BeatEvent(47, 1, new Ship(laneCoords[3], 0, false)));
+
+		beatEvents.push(new BeatEvent(49, 1, new Ship(laneCoords[1], 0, false)));
+		beatEvents.push(new BeatEvent(49, 1, new Ship(laneCoords[3], 0, false)));
+
+		beatEvents.push(new BeatEvent(53, 2, new Ship(laneCoords[2], 0, false)));
+
+		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[0], 0, false)));
+		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[1], 0, false)));
+		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[3], 0, false)));
+		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[4], 0, false)));
+
 		parse(beatEvents);
+
 		add(beaters);
 
 		actions = new Actions();
 
-		player = new Ship(0, 0);
+		player = new Ship(0, 0, true);
 		alignPlayerToLane();
 		playerGroup.add(player);
 		add(playerGroup);
@@ -132,6 +189,7 @@ class JakeState extends FlxState {
 			for (e in renderEvents[currentBeat]) {
 				trace("adding {} on beat {}", e, currentBeat);
 				beaters.add(e.sprite);
+				add(e.sprite);
 				e.sprite.speed = e.speed;
 			}
 		}
@@ -183,7 +241,8 @@ class JakeState extends FlxState {
 	}
 
 	private function alignPlayerToLane() {
-		player.setMidpoint(laneCoords[playerLane], FlxG.height - 50);
+		playerLane = Std.int(Math.max(0, Math.min(laneCoords.length-1, playerLane)));
+		player.setMidpoint(laneCoords[playerLane], FlxG.height - 50 - player.height);
 	}
 
 	private function handlePlayerCarOverlap(player: Ship, ai: Ship) {
