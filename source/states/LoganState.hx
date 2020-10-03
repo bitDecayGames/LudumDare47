@@ -1,5 +1,6 @@
 package states;
 
+import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import events.BeatEvent;
 import events.RenderEvent;
@@ -13,10 +14,13 @@ import flixel.FlxState;
 class LoganState extends FlxState
 {
 	// TODO: These wil likely live somewhere else ultimately
+	var bpm = 112.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
 	var pixPerBeat = 100;
 	var screenBeatSpaces = (FlxG.height / 100);
 	var focusBeat = 5; // this is the beat where things align on screen (the one right in front of the player)
 
+	var lastTick:Float = 0.0;
+	var tickDiff:Float = 0.0;
 
 	var currentBeat:Int = 0;
 
@@ -26,17 +30,25 @@ class LoganState extends FlxState
 	var renderEvents:Map<Int, Array<BeatEvent>> = new Map();
 
 	var beaters:Array<Ship> = [];
+	var tweens:Array<FlxTween> = [];
 
 	override public function create()
 	{
 		super.create();
 		FmodManager.PlaySong(FmodSongs.LetsGo);
+		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 
 		// Debug for testing purposes
 		beatEvents.push(new BeatEvent(15, 0.5, new Ship(0, 0)));
-		beatEvents.push(new BeatEvent(15, 1, new Ship(50, 0)));
-		beatEvents.push(new BeatEvent(15, 2, new Ship(100, 0)));
-		beatEvents.push(new BeatEvent(15, 3, new Ship(200, 0)));
+		beatEvents.push(new BeatEvent(13, 1.0, new Ship(100, 0)));
+		beatEvents.push(new BeatEvent(14, 1.0, new Ship(200, 0)));
+		beatEvents.push(new BeatEvent(15, 1.0, new Ship(100, 0)));
+		beatEvents.push(new BeatEvent(16, 1.0, new Ship(200, 0)));
+		beatEvents.push(new BeatEvent(17, 1.0, new Ship(100, 0)));
+		beatEvents.push(new BeatEvent(18, 1.0, new Ship(200, 0)));
+		beatEvents.push(new BeatEvent(19, 1.0, new Ship(100, 0)));
+		beatEvents.push(new BeatEvent(15, 2.0, new Ship(250, 0)));
+		beatEvents.push(new BeatEvent(16, 3.0, new Ship(300, 0)));
 		parse(beatEvents);
 
 		debugSpeaker = new FlxSprite(FlxG.width / 2, FlxG.height / 2);
@@ -45,8 +57,7 @@ class LoganState extends FlxState
 		debugSpeaker.animation.play("sound");
 		add(debugSpeaker);
 
-		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
-
+		#if !FLX_NO_DEBUG
 		var y = 0;
 		while (y < FlxG.height) {
 			var divider = new FlxSprite(FlxG.width / 2, y, AssetPaths.divider__png);
@@ -59,6 +70,7 @@ class LoganState extends FlxState
 			}
 			y += pixPerBeat;
 		}
+		#end
 	}
 
 	private function parse(events:Array<BeatEvent>) {
@@ -68,8 +80,9 @@ class LoganState extends FlxState
 
 			trace(e, " starting at ", beginRenderBeat);
 
-			//              the impact y-coord          how many beats on screen
+			//              the impact y-coord  minus   how many beats on screen   times  how fast our ship moves
 			e.sprite.y = (focusBeat * pixPerBeat) - (e.impactBeat - beginRenderBeat) * pixPerBeat * e.speed;
+			e.sprite.startY = e.sprite.y;
 			if (!renderEvents.exists(beginRenderBeat)) {
 				renderEvents[beginRenderBeat] = new Array<BeatEvent>();
 			}
@@ -78,17 +91,18 @@ class LoganState extends FlxState
 		}
 	}
 
+
 	private function beat() {
 		debugSpeaker.animation.play("sound", true);
 		currentBeat++;
-		trace("currentBeat", currentBeat);
-		if (currentBeat == 15) {
-			trace("things should align");
-		}
 
-		for (ship in beaters) {
-			ship.y += ship.speed * pixPerBeat;
+		// cancel any in-progress tweens
+		for (t in tweens) {
+			if (!t.finished) {
+				t.cancel();
+			}
 		}
+		tweens.resize(0);
 
 		if (renderEvents.exists(currentBeat)) {
 			for (e in renderEvents[currentBeat]) {
@@ -98,9 +112,21 @@ class LoganState extends FlxState
 				e.sprite.speed = e.speed;
 			}
 		}
-	}
 
-	var time:Float = 0.0;
+		for (ship in beaters) {
+			ship.beat++;
+
+			// set up tween to interpolate using our bpm to keep things aligned
+			tweens.push(FlxTween.linearMotion(
+				ship,
+				ship.x,
+				ship.y,
+				ship.x,
+				ship.startY + ship.beat * (ship.speed * pixPerBeat),
+				60.0 / bpm)
+			);
+		}
+	}
 
 	override public function update(elapsed:Float)
 	{
