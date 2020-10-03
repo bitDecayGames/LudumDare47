@@ -1,7 +1,8 @@
 package states;
 
-import entities.BeatEvent;
-import entities.RenderEvent;
+import events.BeatEvent;
+import events.RenderEvent;
+import entities.Ship;
 import haxefmod.FmodEvents.FmodCallback;
 import flixel.system.FlxAssets;
 import flixel.FlxG;
@@ -23,10 +24,10 @@ class LoganState extends FlxState
 		FmodManager.PlaySong(FmodSongs.LetsGo);
 
 		// Debug for testing purposes
-		beatEvents.push(new BeatEvent(10, 1, new FlxSprite(0, 0, AssetPaths.debugShip__png)));
-		beatEvents.push(new BeatEvent(12, 1, new FlxSprite(50, 0, AssetPaths.debugShip__png)));
-		beatEvents.push(new BeatEvent(15, 1.2, new FlxSprite(100, 0, AssetPaths.debugShip__png)));
-		beatEvents.push(new BeatEvent(30, 3, new FlxSprite(200, 0, AssetPaths.debugShip__png)));
+		beatEvents.push(new BeatEvent(10, 1, new Ship(0, 0)));
+		beatEvents.push(new BeatEvent(12, 1, new Ship(50, 0)));
+		beatEvents.push(new BeatEvent(15, 1.2, new Ship(100, 0)));
+		beatEvents.push(new BeatEvent(30, 3, new Ship(200, 0)));
 		parse(beatEvents);
 
 		debugSpeaker = new FlxSprite(FlxG.width / 2, FlxG.height / 2);

@@ -1,4 +1,4 @@
-package entities;
+package events;
 
 import flixel.FlxSprite;
 
