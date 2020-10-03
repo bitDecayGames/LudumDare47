@@ -27,7 +27,7 @@ class MainMenuState extends FlxUIState {
         _txtTitle.size = 40;
         _txtTitle.alignment = FlxTextAlign.CENTER;
         _txtTitle.text = "Millenial Macarena Motorway";
-        
+
         add(_txtTitle);
 
         _btnPlay = UiHelpers.CreateMenuButton("Play", clickPlay);
@@ -56,7 +56,7 @@ class MainMenuState extends FlxUIState {
     }
 
     function clickPlay():Void {
-        FmodFlxUtilities.TransitionToStateAndStopMusic(new VictoryState());
+        FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState());
     }
 
     function clickCredits():Void {
