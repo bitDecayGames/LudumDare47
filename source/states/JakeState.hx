@@ -15,6 +15,7 @@ import flixel.system.FlxAssets;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
+import flixel.group.FlxGroup.FlxTypedGroup;
 
 using extensions.FlxObjectExt;
 
@@ -34,7 +35,7 @@ class JakeState extends FlxState {
 	var beatEvents:Array<BeatEvent> = [];
 	var renderEvents:Map<Int, Array<BeatEvent>> = new Map();
 
-	var beaters:Array<Ship> = [];
+	var beaters:FlxTypedGroup<Ship> = new FlxTypedGroup<Ship>();
 	var tweens:Array<FlxTween> = [];
 
 	// milliseconds the player can be early
@@ -50,6 +51,7 @@ class JakeState extends FlxState {
 	var beatAwaitingProcessing:Bool;
 
 	var player:Ship;
+	var playerGroup:FlxTypedGroup<Ship> = new FlxTypedGroup<Ship>();
 	var playerLane:Int = 0;
 
 	var laneCoords:Array<Float> = [
@@ -80,12 +82,14 @@ class JakeState extends FlxState {
 		beatEvents.push(new BeatEvent(15, 2.0, new Ship(250, 0)));
 		beatEvents.push(new BeatEvent(16, 3.0, new Ship(300, 0)));
 		parse(beatEvents);
+		add(beaters);
 
 		actions = new Actions();
 
 		player = new Ship(0, 0);
 		alignPlayerToLane();
-		add(player);
+		playerGroup.add(player);
+		add(playerGroup);
 
 		debugSpeaker = new FlxSprite(FlxG.width / 2, FlxG.height / 2);
 		debugSpeaker.loadGraphic(AssetPaths.speakerTest__png, true, 80, 80);
@@ -132,8 +136,7 @@ class JakeState extends FlxState {
 		if (renderEvents.exists(currentBeat)) {
 			for (e in renderEvents[currentBeat]) {
 				trace("adding {} on beat {}", e, currentBeat);
-				add(e.sprite);
-				beaters.push(e.sprite);
+				beaters.add(e.sprite);
 				e.sprite.speed = e.speed;
 			}
 		}
@@ -188,6 +191,11 @@ class JakeState extends FlxState {
 		player.setMidpoint(laneCoords[playerLane], FlxG.height - 50);
 	}
 
+	private function handlePlayerCarOverlap(player: Ship, ai: Ship) {
+		beaters.remove(ai);
+		ai.kill();
+	}
+
 	override public function update(elapsed:Float) {
 		super.update(elapsed);
 		var timestamp = Date.now().getTime();
@@ -229,6 +237,8 @@ class JakeState extends FlxState {
 				player.color = FlxColor.BLUE;
 			}
 		}
+
+		FlxG.overlap(playerGroup, beaters, handlePlayerCarOverlap);
 	}
 
 	override public function onFocusLost():Void {
