@@ -7,7 +7,7 @@ import flixel.FlxState;
 
 /**
  * @author Tanner Moore
- * For games that are deployed to html5, the FMOD audio engine must be loaded before starting the game. 
+ * For games that are deployed to html5, the FMOD audio engine must be loaded before starting the game.
  */
 class LoadFmodState extends FlxState {
     override public function create():Void {
@@ -21,7 +21,19 @@ class LoadFmodState extends FlxState {
     }
     override public function update(elapsed:Float):Void {
         if(FmodManager.IsInitialized()){
+            #if logan
+            FlxG.switchState(new LoganState());
+            #elseif tristan
             FlxG.switchState(new SplashScreenState());
+            #elseif jake
+            FlxG.switchState(new SplashScreenState());
+            #elseif tanner
+            FlxG.switchState(new SplashScreenState());
+            #elseif mike
+            FlxG.switchState(new SplashScreenState());
+            #else
+            FlxG.switchState(new SplashScreenState());
+            #end
         }
     }
 }
