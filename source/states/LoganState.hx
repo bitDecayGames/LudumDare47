@@ -82,6 +82,8 @@ class LoganState extends FlxState
 
 			//              the impact y-coord  minus   how many beats on screen   times  how fast our ship moves
 			e.sprite.y = (focusBeat * pixPerBeat) - (e.impactBeat - beginRenderBeat) * pixPerBeat * e.speed;
+			// we want things to be lined up based on the bottom of the ship
+			e.sprite.y -= e.sprite.height;
 			e.sprite.startY = e.sprite.y;
 			if (!renderEvents.exists(beginRenderBeat)) {
 				renderEvents[beginRenderBeat] = new Array<BeatEvent>();

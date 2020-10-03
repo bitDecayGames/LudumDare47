@@ -13,7 +13,6 @@ class Ship extends FlxSprite {
 		loadGraphic(AssetPaths.player__png, true, 90, 135);
 		animation.add("idle", [0]);
 		animation.play("idle");
-		offset.set(0, height);
 	}
 
 	override public function update(delta:Float) {
