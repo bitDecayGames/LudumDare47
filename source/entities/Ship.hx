@@ -15,8 +15,8 @@ class Ship extends FlxSpriteGroup {
 
 	var hitbox = new FlxPoint(80, 100);
 
-	var body:ParentedSprite;
-	var jets:ParentedSprite;
+	public var body:ParentedSprite;
+	public var jets:ParentedSprite;
 
 	var pulseTarget:Float;
 
