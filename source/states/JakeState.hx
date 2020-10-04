@@ -172,6 +172,8 @@ class JakeState extends FlxState {
 		beatTime = Date.now().getTime();
 		beatAwaitingProcessing = true;
 
+		FlxG.camera.shake(0.005, 0.05);
+
 		currentBeat++;
 
 		// cancel any in-progress tweens
