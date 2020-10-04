@@ -5,6 +5,8 @@ import entities.Ship;
 import flixel.addons.editors.ogmo.FlxOgmo3Loader;
 import flixel.tile.FlxTilemap;
 import flixel.FlxState;
+import flixel.FlxSprite;
+import flixel.FlxG;
 
 class Level {
 	public var bpm: Float = 0.0;
@@ -12,11 +14,15 @@ class Level {
 
 	public var beatEvents:Array<BeatEvent> = [];
 	public var track:FlxTilemap;
-	public var background:FlxTilemap;
+	public var track2:FlxTilemap;
+	public var background:FlxSprite;
 
 	public function new(bpm: Float, pixelsPerBeat: Int) {
 		this.bpm = bpm;
 		this.pixelsPerBeat = pixelsPerBeat;
+
+		background = new FlxSprite();
+		background.loadGraphic(AssetPaths.nebula0__png, false, 560, 1260, true);
 	}
 
     public function initDefaultBeatEvents(laneCoords: Array<Float>) {
@@ -62,17 +68,23 @@ class Level {
 	}
 
 	public function addToState(state: FlxState) {
-		// state.add(background);
+		state.add(background);
 		state.add(track);
+
+		state.add(track2);
 	}
 	
 	public function loadOgmoMap(ogmoFile:String, levelFile:String) {
 		var map = new FlxOgmo3Loader(ogmoFile, levelFile);
 
-		// background = map.loadTilemap(AssetPaths.cityTiles__png, "Ground");
 		track = map.loadTilemap(AssetPaths.tiles__png, "Track");
 		track.x -= 55;
-		track.y = -track.height;
+		track.y = -track.height + FlxG.height;
+
+		var newMapWhoDis = new FlxOgmo3Loader(ogmoFile, AssetPaths.segment01__json);
+		track2 = newMapWhoDis.loadTilemap(AssetPaths.tiles__png, "Track");
+		track2.x = track.x;
+		track2.y = FlxG.height;
 		// TODO May not need to do this
 		// FlxG.worldBounds.set(0, 0, walls.width, walls.height);
 		// groundType = map.loadTilemap(AssetPaths.groundTypes__png, "GroundType");
@@ -95,9 +107,15 @@ class Level {
 
 	public function update(elapsed:Float) {
 		var bps = bpm / 60;
-		track.y += elapsed * bps * pixelsPerBeat * 4;
-		if (!track.isOnScreen()) {
-			track.y = -track.height;
+		var dy = elapsed * bps * pixelsPerBeat * 4;
+		track.y += dy;
+		if (track.y >= 0) {
+			track2.y = track.y - track2.height;
+		}
+
+		track2.y += dy;
+		if (track2.y >= 0) {
+			track.y = track2.y - track.height;
 		}
 	}
 }
