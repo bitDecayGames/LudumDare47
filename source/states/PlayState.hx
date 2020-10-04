@@ -113,17 +113,11 @@ class PlayState extends FlxState {
 		halfTime = timePerBeat/2;
 		trace("timePerBeat: " + timePerBeat);
 		trace("halfTime: " + halfTime);
-
-
-		var shaderInput = new ShaderInput<BitmapData>();
-		var noiseBitmap = new FlxSprite(0,0, "assets/images/NoiseTexture.png");
-		shaderInput.input = noiseBitmap.pixels.clone();
 		
 		camera.setFilters(filters);
 
 		shader = new Vhs();
 		shader.iTime.value = [0];
-		shader.noiseTexture = shaderInput;
 		vhsFilter = new ShaderFilter(shader);
 
 		FlxG.debugger.visible = true;

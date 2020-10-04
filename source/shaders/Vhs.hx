@@ -9,13 +9,19 @@ class Vhs extends FlxShader
         #pragma header
 
         uniform float iTime;
-        uniform sampler2D noiseTexture;
+
+        float random(vec2 st) {
+            return fract(sin(dot(st.xy, vec2(12.9898,78.233))*iTime)*43758.5453123);
+        }
         
         float noise(vec2 p)
         {
-            float s = flixel_texture2D(noiseTexture,vec2(1.,2.*cos(iTime))*iTime*8. + p*1.).x;
-            s *= s;
-            return s;
+            float rand = random(p);
+            if (rand <= 0.5) {
+                return 0.;
+            } else {
+                return 1.;
+            }
         }
 
         float onOff(float a, float b, float c)
@@ -66,7 +72,7 @@ class Vhs extends FlxShader
             vec3 video = getVideo(uv);
             
 	        video += stripes(uv);
-            video += noise(uv*2.)/2.;
+            video += noise(uv*2.)/6.;
             
             // Add the pulsing black boarders
             float vigAmt = 3.+.3*sin(iTime + 5.*cos(iTime*5.));
@@ -76,7 +82,7 @@ class Vhs extends FlxShader
             // Add the spaced lines that slowly move down
             video *= (12.+mod(uv.y*30.+iTime,1.))/13.;
 
-			gl_FragColor = vec4(video, 1.0);
+            gl_FragColor = vec4(video, 1.0);
         }')
 
     public function new()
