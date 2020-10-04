@@ -35,14 +35,17 @@ class TristanState extends FlxState
 		super.create();
 		//FmodManager.PlaySong(FmodSongs.LetsGo);
 
-		map = new FlxOgmo3Loader(AssetPaths.turnBasedRPG__ogmo, AssetPaths.room_001__json);
-		tiles = map.loadTilemap(AssetPaths.tiles__png, "walls");
-		//tiles.follow();
-		tiles.setTileProperties(1, FlxObject.NONE);
-		tiles.setTileProperties(2, FlxObject.ANY);
-		add(tiles);
+		// map = new FlxOgmo3Loader(AssetPaths.turnBasedRPG__ogmo, AssetPaths.room_001__json);
+		// tiles = map.loadTilemap(AssetPaths.tiles__png, "walls");
+		// //tiles.follow();
+		// tiles.setTileProperties(1, FlxObject.NONE);
+		// tiles.setTileProperties(2, FlxObject.ANY);
+		// add(tiles);
 
-		tiles.shader = shader;
+
+		var barrier = new FlxSprite(FlxG.width / 2, 0, AssetPaths.standAloneBarrier__png);
+		add(barrier);
+		barrier.shader = shader;
 
 		FlxG.cameras.bgColor = FlxColor.BLACK;
 
@@ -75,7 +78,7 @@ class TristanState extends FlxState
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		this.shader.firePos.value = [xPos, 0.5];
+		this.shader.lights.value = [xPos, 0.5];
 		this.shader.fireRadius.value = [lightRadius];
 
 		FmodManager.Update();
