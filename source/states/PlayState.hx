@@ -31,7 +31,6 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.group.FlxGroup.FlxTypedGroup;
-import level.Ground;
 import level.Level;
 import entities.BeatSpeaker;
 import textpop.FlyBack;
@@ -100,7 +99,6 @@ class PlayState extends FlxState {
 
 	var beatSpeaker:BeatSpeaker;
 
-	var ground: Ground;
 	var level:Level;
 
 	override public function create()
@@ -110,10 +108,8 @@ class PlayState extends FlxState {
 		level = new Level(defaultBpm, defaultPixPerBeat);
 		level.initDefaultBeatEvents(laneCoords);
 		parse(level.beatEvents);
+		level.loadOgmoMap(AssetPaths.segment00__ogmo, AssetPaths.segment00__json);
 		level.addToState(this);
-
-		ground = new Ground();
-		add(ground);
 
 		comboText = new FlxText(10, FlxG.height-45, 100, "0", 30);
 		add(comboText);
@@ -232,8 +228,6 @@ class PlayState extends FlxState {
 				60.0 / level.bpm)
 			);
 		}
-
-		ground.handleBeat();
 	}
 
 	private function resetBeatVars() {
@@ -299,6 +293,8 @@ class PlayState extends FlxState {
 
 		FlxG.overlap(playerGroup, beaters, handlePlayerCarOverlap);
 		comboText.text = Std.string(comboCounter);
+
+		level.update(elapsed);
 	}
 
 	private function calculateBeatScore(ts:Float) {
