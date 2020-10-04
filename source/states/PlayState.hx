@@ -109,6 +109,7 @@ class PlayState extends FlxState {
 		level = new Level(defaultBpm);
 		level.initDefaultBeatEvents(laneCoords);
 		parse(level.beatEvents);
+		level.addToState(this);
 
 		comboText = new FlxText(10, FlxG.height-45, 100, "0", 30);
 		add(comboText);
@@ -173,7 +174,7 @@ class PlayState extends FlxState {
 
 			trace(e, " starting at ", beginRenderBeat);
 
-			//              the impact y-coord  minus   how many beats on screen   times  how fast our ship moves
+			// the impact y-coord  minus   how many beats on screen   times  how fast our ship moves
 			e.sprite.y = (focusBeat * pixPerBeat) - (e.impactBeat - beginRenderBeat) * pixPerBeat * e.speed;
 			// we want things to be lined up based on the bottom of the ship
 			e.sprite.y -= e.sprite.body.height;

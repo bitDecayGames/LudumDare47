@@ -4,6 +4,7 @@ import events.BeatEvent;
 import entities.Ship;
 import flixel.addons.editors.ogmo.FlxOgmo3Loader;
 import flixel.tile.FlxTilemap;
+import flixel.FlxState;
 
 class Level {
 	public var bpm: Float = 0.0;
@@ -63,6 +64,11 @@ class Level {
 		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[1], 0)));
 		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[3], 0)));
 		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[4], 0)));
+	}
+
+	public function addToState(state: FlxState) {
+		// state.add(background);
+		// state.add(walls);
 	}
 	
 	private function load(map: FlxOgmo3Loader) {
