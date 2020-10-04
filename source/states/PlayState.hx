@@ -1,5 +1,7 @@
 package states;
 
+import com.bitdecay.textpop.style.builtin.FloatAway;
+import com.bitdecay.textpop.style.Style;
 import flixel.text.FlxText;
 import com.bitdecay.textpop.TextPop;
 import flixel.tweens.motion.LinearMotion;
@@ -25,6 +27,7 @@ import flixel.FlxState;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import level.Ground;
 import entities.BeatSpeaker;
+import textpop.FlyBack;
 
 using extensions.FlxObjectExt;
 
@@ -269,7 +272,7 @@ class PlayState extends FlxState {
 		beaters.remove(ai);
 		ai.kill();
 		resetCombo();
-		TextPop.pop(Std.int(player.x), Std.int(player.y), "Collision", null, 25);
+		TextPop.pop(Std.int(player.x), Std.int(player.y), "Collision", new FlyBack(-300, 1), 25);
 	}
 
 	override public function update(elapsed:Float) {
@@ -305,15 +308,15 @@ class PlayState extends FlxState {
 		trace("Diff: " + diff);
 
 		if (diff < timePerBeat / 4) {
-			TextPop.pop(Std.int(player.x), Std.int(player.y), "Great!", null, 25);
+			TextPop.pop(Std.int(player.x), Std.int(player.y), "Great!", new FlyBack(-300, 1), 25);
 			comboCounter++;
 			player.color = FlxColor.BLUE;
 		} else if (diff < timePerBeat / 3) {
-			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", null, 25);
+			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", new FlyBack(-300, 1), 25);
 			resetCombo();
 			player.color = FlxColor.YELLOW;
 		} else {
-			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", null, 25);
+			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", new FlyBack(-300, 1), 25);
 			resetCombo();
 			player.color = FlxColor.RED;
 		}
