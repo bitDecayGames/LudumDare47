@@ -22,6 +22,18 @@ class Ship extends FlxSpriteGroup {
 
 	public function new(x:Float, y:Float) {
 		super(x, y);
+
+		var heads = FlxG.random.int(0, 1) == 0;
+		if (heads) {
+			createShip0();
+		} else {
+			createShip1();
+		}
+
+		newTarget();
+	}
+
+	private function createShip0() {
 		body = new ParentedSprite(this);
 		body.loadGraphic(AssetPaths.ship0__png, true, 90, 135);
 		body.setSize(hitbox.x, hitbox.y);
@@ -39,8 +51,26 @@ class Ship extends FlxSpriteGroup {
 		jets.animation.add("idle", [0]);
 		jets.animation.play("idle");
 		add(jets);
+	}
 
-		newTarget();
+	private function createShip1() {
+		body = new ParentedSprite(this);
+		body.loadGraphic(AssetPaths.ship1__png, true, 90, 135);
+		body.setSize(hitbox.x, hitbox.y);
+		body.offset.set(5, body.height - hitbox.y + 35);
+		this.setMidpoint(x - body.width/2, y);
+		body.animation.add("idle", [0]);
+		body.animation.play("idle");
+		add(body);
+
+		jets = new ParentedSprite(this);
+		jets.loadGraphic(AssetPaths.jetsShip1__png, true, 45, 80);
+		jets.setPosition(17, 122 - 35);
+		jets.allowCollisions = 0;
+
+		jets.animation.add("idle", [0]);
+		jets.animation.play("idle");
+		add(jets);
 	}
 
 	private function newTarget() {
