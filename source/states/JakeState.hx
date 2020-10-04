@@ -1,11 +1,16 @@
 package states;
 
+import flixel.tweens.motion.LinearMotion;
+import flixel.tweens.misc.VarTween;
+import haxe.Timer;
+import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import flixel.FlxSprite;
 import flixel.input.actions.FlxAction.FlxActionDigital;
 import flixel.FlxG;
 import entities.Ship;
+import entities.Player;
 import haxefmod.FmodEvents.FmodCallback;
 import flixel.FlxState;
 import actions.Actions;
@@ -24,7 +29,7 @@ using extensions.FlxObjectExt;
 class JakeState extends FlxState {
 
 	// TODO: These wil likely live somewhere else ultimately
-	var bpm = 112.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
+	var bpm = 130.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
 	var pixPerBeat = 100;
 	var screenBeatSpaces = (FlxG.height / 100);
 	var focusBeat = 5; // this is the beat where things align on screen (the one right in front of the player)
@@ -46,15 +51,21 @@ class JakeState extends FlxState {
 	// milliseconds the player can be late
 	var postBufferMS:Float = 100;
 
+	var timePerBeat:Float = 0;
+	var halfTime:Float = 0;
+
 	var actions:Actions;
 	var inputBuffer:Map<FlxActionDigital, Float> = new Map();
 
 	var beatTime:Float;
 	var beatAwaitingProcessing:Bool;
 
-	var player:Ship;
-	var playerGroup:FlxTypedGroup<Ship> = new FlxTypedGroup<Ship>();
-	var playerLane:Int = 0;
+	var player:Player;
+	var playerTween:LinearMotion = null;
+	var playerGroup:FlxTypedGroup<Player> = new FlxTypedGroup<Player>();
+	var playerLane:Int = 2;
+	var targetPlayerLane:Int = 2;
+	var lastPlayerInput:Float = -1;
 
 	var laneCoords:Array<Float> = [
 		FlxG.width / 2 - 160,
@@ -72,7 +83,13 @@ class JakeState extends FlxState {
 	{
 		super.create();
 
-		FmodManager.PlaySong(FmodSongs.Song2);
+		timePerBeat = 60.0/bpm;
+		halfTime = timePerBeat/2;
+		trace("timePerBeat: " + timePerBeat);
+		trace("halfTime: " + halfTime);
+
+		FlxG.debugger.visible = true;
+		FmodManager.PlaySong(FmodSongs.Level1);
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 
 		add(ground);
@@ -92,45 +109,51 @@ class JakeState extends FlxState {
 		}
 		#end
 
-		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[0], 0, false)));
-		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[1], 0, false)));
-		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[3], 0, false)));
-		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[4], 0, false)));
+		// Debug for testing purposes
+		// for (i in 0...100) {
+		// 	var ship = new Ship(laneCoords[i % 5], 0, false);
+		// 	beatEvents.push(new BeatEvent(i * i, i * 0.1, ship));
+		// }
 
-		beatEvents.push(new BeatEvent(14, 1, new Ship(laneCoords[2], 0, false)));
+		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[0], 0)));
+		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[1], 0)));
+		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[3], 0)));
+		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[4], 0)));
 
-		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[1], 0, false)));
-		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[2], 0, false)));
-		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[3], 0, false)));
-		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[4], 0, false)));
+		beatEvents.push(new BeatEvent(14, 1, new Ship(laneCoords[2], 0)));
 
-		beatEvents.push(new BeatEvent(24, 1, new Ship(laneCoords[0], 0, false)));
-		beatEvents.push(new BeatEvent(25, 1, new Ship(laneCoords[1], 0, false)));
-		beatEvents.push(new BeatEvent(26, 1, new Ship(laneCoords[2], 0, false)));
-		beatEvents.push(new BeatEvent(27, 1, new Ship(laneCoords[3], 0, false)));
+		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[1], 0)));
+		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[2], 0)));
+		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[3], 0)));
+		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[4], 0)));
 
-		beatEvents.push(new BeatEvent(33, 1, new Ship(laneCoords[4], 0, false)));
-		beatEvents.push(new BeatEvent(34, 1, new Ship(laneCoords[3], 0, false)));
-		beatEvents.push(new BeatEvent(35, 1, new Ship(laneCoords[2], 0, false)));
-		beatEvents.push(new BeatEvent(36, 1, new Ship(laneCoords[1], 0, false)));
+		beatEvents.push(new BeatEvent(24, 1, new Ship(laneCoords[0], 0)));
+		beatEvents.push(new BeatEvent(25, 1, new Ship(laneCoords[1], 0)));
+		beatEvents.push(new BeatEvent(26, 1, new Ship(laneCoords[2], 0)));
+		beatEvents.push(new BeatEvent(27, 1, new Ship(laneCoords[3], 0)));
 
-		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[0], 0, false)));
-		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[1], 0, false)));
-		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[3], 0, false)));
-		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[4], 0, false)));
+		beatEvents.push(new BeatEvent(33, 1, new Ship(laneCoords[4], 0)));
+		beatEvents.push(new BeatEvent(34, 1, new Ship(laneCoords[3], 0)));
+		beatEvents.push(new BeatEvent(35, 1, new Ship(laneCoords[2], 0)));
+		beatEvents.push(new BeatEvent(36, 1, new Ship(laneCoords[1], 0)));
 
-		beatEvents.push(new BeatEvent(47, 1, new Ship(laneCoords[1], 0, false)));
-		beatEvents.push(new BeatEvent(47, 1, new Ship(laneCoords[3], 0, false)));
+		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[0], 0)));
+		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[1], 0)));
+		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[3], 0)));
+		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[4], 0)));
 
-		beatEvents.push(new BeatEvent(49, 1, new Ship(laneCoords[1], 0, false)));
-		beatEvents.push(new BeatEvent(49, 1, new Ship(laneCoords[3], 0, false)));
+		beatEvents.push(new BeatEvent(47, 1, new Ship(laneCoords[1], 0)));
+		beatEvents.push(new BeatEvent(47, 1, new Ship(laneCoords[3], 0)));
 
-		beatEvents.push(new BeatEvent(53, 2, new Ship(laneCoords[2], 0, false)));
+		beatEvents.push(new BeatEvent(49, 1, new Ship(laneCoords[1], 0)));
+		beatEvents.push(new BeatEvent(49, 1, new Ship(laneCoords[3], 0)));
 
-		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[0], 0, false)));
-		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[1], 0, false)));
-		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[3], 0, false)));
-		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[4], 0, false)));
+		beatEvents.push(new BeatEvent(53, 2, new Ship(laneCoords[2], 0)));
+
+		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[0], 0)));
+		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[1], 0)));
+		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[3], 0)));
+		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[4], 0)));
 
 		parse(beatEvents);
 
@@ -138,8 +161,10 @@ class JakeState extends FlxState {
 
 		actions = new Actions();
 
-		player = new Ship(0, 0, true);
-		alignPlayerToLane();
+		player = new Player(0, 0);
+		player.x = laneCoords[playerLane] - player.width/2;
+		player.y = FlxG.height - 50 - player.height;
+
 		playerGroup.add(player);
 		add(playerGroup);
 
@@ -179,7 +204,7 @@ class JakeState extends FlxState {
 		// cancel any in-progress tweens
 		for (t in tweens) {
 			if (!t.finished) {
-				t.cancel();
+				t.cancelChain();
 			}
 		}
 		tweens.resize(0);
@@ -210,40 +235,25 @@ class JakeState extends FlxState {
 		ground.handleBeat();
 	}
 
-	private function checkInput(timestamp:Float):Bool {
-		if (inputBuffer.exists(actions.left)) {
-			if (timestamp - inputBuffer[actions.left] < bufferMS) {
-				playerLane--;
-				player.color = FlxColor.GREEN;
-			} else {
-				player.color = FlxColor.RED;
-			}
-			resetBeatVars();
-		}
-
-		if (inputBuffer.exists(actions.right)) {
-			if (timestamp - inputBuffer[actions.right] < bufferMS) {
-				playerLane++;
-				player.color = FlxColor.GREEN;
-			} else {
-				player.color = FlxColor.RED;
-			}
-			resetBeatVars();
-		}
-
-		// return false if still awaiting processing
-		return !beatAwaitingProcessing;
-	}
-
 	private function resetBeatVars() {
-		inputBuffer.clear();
-		alignPlayerToLane();
-		beatAwaitingProcessing = false;
+		if (playerTween == null || playerTween.finished) {
+			alignPlayerToLane();
+		}
 	}
 
 	private function alignPlayerToLane() {
-		playerLane = Std.int(Math.max(0, Math.min(laneCoords.length-1, playerLane)));
-		player.setMidpoint(laneCoords[playerLane], FlxG.height - 50 - player.height);
+		var newPlayerLane = Std.int(Math.max(0, Math.min(laneCoords.length-1, targetPlayerLane)));
+		if (newPlayerLane != playerLane) {
+			playerLane = newPlayerLane;
+			playerTween = FlxTween.linearMotion(
+				player,
+				player.x,
+				player.y,
+				laneCoords[playerLane] - player.width/2,
+				FlxG.height - 50 - player.height,
+				timePerBeat / 2
+				);
+		}
 	}
 
 	private function handlePlayerCarOverlap(player: Ship, ai: Ship) {
@@ -256,44 +266,39 @@ class JakeState extends FlxState {
 		var timestamp = Date.now().getTime();
 		FmodManager.Update();
 
-		if (beatAwaitingProcessing) {
-			if (checkInput(beatTime)) {
-				// input was handled, just bail
-				return;
-			}
-
+		if (playerTween == null || playerTween.finished) {
 			if (actions.left.check()) {
-				playerLane--;
-				player.color = FlxColor.YELLOW;
-				beatAwaitingProcessing = false;
-				resetBeatVars();
+				targetPlayerLane = playerLane - 1;
+				alignPlayerToLane();
+				calculateBeatScore(timestamp);
 			}
 
 			if (actions.right.check()) {
-				playerLane++;
-				player.color = FlxColor.YELLOW;
-				beatAwaitingProcessing = false;
-				resetBeatVars();
-			}
-
-			if (beatAwaitingProcessing && timestamp - beatTime > postBufferMS) {
-				// hasn't processed beat yet, AND it's been past the buffer
-				// count is as missed and move on
-				resetBeatVars();
-			}
-		} else {
-			if (actions.left.check() && !inputBuffer.exists(actions.left)) {
-				inputBuffer[actions.left] = timestamp;
-				player.color = FlxColor.BLUE;
-			}
-
-			if (actions.right.check() && !inputBuffer.exists(actions.right)) {
-				inputBuffer[actions.right] = timestamp;
-				player.color = FlxColor.BLUE;
+				targetPlayerLane = playerLane + 1;
+				alignPlayerToLane();
+				calculateBeatScore(timestamp);
 			}
 		}
 
 		FlxG.overlap(playerGroup, beaters, handlePlayerCarOverlap);
+	}
+
+	private function calculateBeatScore(ts:Float) {
+		var diff = Math.abs(ts - beatTime) / 1000;
+		trace("RawDiff: " + diff);
+		if (diff > halfTime) {
+			diff = Math.abs(diff - timePerBeat);
+		}
+
+		trace("Diff: " + diff);
+
+		if (diff < timePerBeat / 4) {
+			player.color = FlxColor.BLUE;
+		} else if (diff < timePerBeat / 3) {
+			player.color = FlxColor.YELLOW;
+		} else {
+			player.color = FlxColor.RED;
+		}
 	}
 
 	override public function onFocusLost():Void {

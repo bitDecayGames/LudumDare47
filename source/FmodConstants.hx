@@ -9,7 +9,6 @@ class FmodSongs {
     public static inline var LetsGo:String = "event:/Music/LetsGo";
     public static inline var Level1:String = "event:/Music/Level1";
     public static inline var Level2:String = "event:/Music/Level2";
-    public static inline var Level2:String = "event:/Music/Level2";
     public static inline var Level3:String = "event:/Music/Level3";
     public static inline var Tutorial:String = "event:/Music/Tutorial";
 }
