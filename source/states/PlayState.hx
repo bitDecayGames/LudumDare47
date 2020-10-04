@@ -1,5 +1,10 @@
 package states;
 
+import openfl.filters.BitmapFilter;
+import openfl.display.BitmapData;
+import openfl.display.ShaderInput;
+import openfl.filters.ShaderFilter;
+import shaders.Vhs;
 import entities.ParentedSprite;
 import com.bitdecay.textpop.style.builtin.FloatAway;
 import com.bitdecay.textpop.style.Style;
@@ -45,8 +50,13 @@ class PlayState extends FlxState {
 	var comboText:FlxText;
 	var comboCounter:Int = 0;
 
+	var filters:Array<BitmapFilter> = new Array<BitmapFilter>();
 	var blurFilter:BlurFilter = new BlurFilter(4, 0, openfl.filters.BitmapFilterQuality.MEDIUM);
-
+	
+	var isShaderActive:Bool;
+	var shader:Vhs;
+	var vhsFilter:ShaderFilter;
+	
 	var lastTick:Float = 0.0;
 	var tickDiff:Float = 0.0;
 
@@ -103,6 +113,16 @@ class PlayState extends FlxState {
 		halfTime = timePerBeat/2;
 		trace("timePerBeat: " + timePerBeat);
 		trace("halfTime: " + halfTime);
+
+
+		var shaderInput = new ShaderInput<BitmapData>();
+		var noiseBitmap = new FlxSprite(0,0, "assets/images/NoiseTexture.png");
+		shaderInput.input = noiseBitmap.pixels.clone();
+		
+		shader = new Vhs();
+		shader.iTime.value = [0];
+		shader.noiseTexture = shaderInput;
+		vhsFilter = new ShaderFilter(shader);
 
 		FlxG.debugger.visible = true;
 		FmodManager.PlaySong(FmodSongs.Level1);
@@ -202,6 +222,10 @@ class PlayState extends FlxState {
 		}
 	}
 
+	private function updateFilters(){
+		camera.setFilters(filters);
+	}
+
 	private function beat() {
 		beatSpeaker.handleBeat();
 		beatTime = Date.now().getTime();
@@ -209,7 +233,8 @@ class PlayState extends FlxState {
 
 		FlxG.camera.shake(0.005, 0.05);
 		camera.setFilters([blurFilter]);
-		Timer.delay(()->{camera.setFilters([]);}, 100);
+		filters.remove(blurFilter);
+		Timer.delay(()->{updateFilters();}, 100);
 
 		currentBeat++;
 
@@ -283,6 +308,18 @@ class PlayState extends FlxState {
 		var timestamp = Date.now().getTime();
 		FmodManager.Update();
 
+		shader.iTime.value[0] += elapsed;
+		if (FlxG.keys.justPressed.P)
+		{
+				isShaderActive = !isShaderActive;
+				if (isShaderActive) {
+					filters.push(vhsFilter);
+				} else {
+					filters.remove(vhsFilter);
+				}
+				updateFilters();
+		}
+
 		if (playerTween == null || playerTween.finished) {
 			if (actions.left.check()) {
 				targetPlayerLane = playerLane - 1;
@@ -313,20 +350,19 @@ class PlayState extends FlxState {
 		if (diff < timePerBeat / 4) {
 			TextPop.pop(Std.int(player.x), Std.int(player.y), "Great!", new FlyBack(-300, 1), 25);
 			comboCounter++;
-			player.color = FlxColor.BLUE;
 		} else if (diff < timePerBeat / 3) {
 			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", new FlyBack(-300, 1), 25);
 			resetCombo();
-			player.color = FlxColor.YELLOW;
 		} else {
 			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", new FlyBack(-300, 1), 25);
 			resetCombo();
-			player.color = FlxColor.RED;
 		}
 	}
 
 	private function resetCombo() {
 		comboCounter = 0;
+		FmodManager.PlaySoundOneShot(FmodSFX.ComboLost);
+		FmodManager.SetEventParameterOnSong("Miss", 1);
 	}
 
 	override public function onFocusLost():Void {
