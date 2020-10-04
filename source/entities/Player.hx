@@ -1,5 +1,6 @@
 package entities;
 
+import shaders.NormalMapShader;
 import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
@@ -16,17 +17,21 @@ class Player extends FlxSpriteGroup {
 
 	var noseBuffer = 5;
 
-	var ship:ParentedSprite;
+	public var ship:ParentedSprite;
+
 	var jets:ParentedSprite;
 
+	var _shader:NormalMapShader;
 	var pulseTarget:Float;
 
 	public function new(x:Float, y:Float) {
 		super(x, y);
+		_shader = new NormalMapShader(new FlxSprite(AssetPaths.player_n__png));
 		ship = new ParentedSprite(this);
 		ship.loadGraphic(AssetPaths.player__png, true, 90, 135, true);
 		ship.setSize(hitbox.x, hitbox.y);
 		ship.offset.set(15, noseBuffer);
+		ship.shader = _shader;
 		this.setMidpoint(x, y);
 		ship.animation.add("idle", [0]);
 		ship.animation.play("idle");
@@ -58,5 +63,13 @@ class Player extends FlxSpriteGroup {
 				newTarget();
 			}
 		}
+	}
+
+	public function setLightPosition(lightPos:FlxPoint) {
+		_shader.setLightPosition(new FlxPoint((lightPos.x - ship.x) / (ship.frameWidth * 3), (lightPos.y - ship.y) / ship.frameHeight));
+	}
+
+	public function setAmbientRatio(ratio:Float) {
+		_shader.setAmbientRatio(ratio);
 	}
 }

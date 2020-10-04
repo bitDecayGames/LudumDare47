@@ -16,7 +16,7 @@ class CreditsState extends FlxUIState {
     var _allCreditElements:Array<FlxSprite>;
 
     var _btnMainMenu:FlxButton;
-    
+
     var _txtCreditsTitle:FlxText;
     var _txtThankYou:FlxText;
     var _txtRole:Array<FlxText>;
@@ -41,7 +41,7 @@ class CreditsState extends FlxUIState {
         _txtThankYou = new FlxText();
         _txtRole = new Array<FlxText>();
         _txtCreator = new Array<FlxText>();
-        
+
         _txtCreditsTitle.size = 40;
         _txtCreditsTitle.alignment = FlxTextAlign.CENTER;
         _txtCreditsTitle.text = "Credits";
@@ -58,14 +58,14 @@ class CreditsState extends FlxUIState {
         for (flxText in _txtRole) {
             flxText.setPosition(0, creditsTextVerticalOffset);
             creditsTextVerticalOffset += 25;
-        } 
+        }
 
         creditsTextVerticalOffset = FlxG.height;
 
         for (flxText in _txtCreator) {
-            flxText.setPosition(FlxG.width - 250, creditsTextVerticalOffset);
+            flxText.setPosition(FlxG.width - flxText.width, creditsTextVerticalOffset);
             creditsTextVerticalOffset += 25;
-        } 
+        }
 
         var flStudioLogo = new FlxSprite();
         flStudioLogo.loadGraphic(AssetPaths.FLStudioLogo__png);
@@ -94,7 +94,7 @@ class CreditsState extends FlxUIState {
         _txtThankYou.size = 40;
         _txtThankYou.alignment = FlxTextAlign.CENTER;
         _txtThankYou.text = "Thank you!";
-        _txtThankYou.setPosition(FlxG.width/2 - _txtThankYou.width/2, haxeFlixelLogo.y + 400);
+        _txtThankYou.setPosition(FlxG.width/2 - _txtThankYou.width/2, haxeFlixelLogo.y + haxeFlixelLogo.height + FlxG.height / 2);
         add(_txtThankYou);
         _allCreditElements.push(_txtThankYou);
     }
@@ -102,6 +102,7 @@ class CreditsState extends FlxUIState {
     private function AddSectionToCreditsTextArrays(role:String, creators:Array<String>, finalRoleArray:Array<FlxText>, finalCreatorsArray:Array<FlxText>) {
         var roleText = new FlxText();
         roleText.size = 15;
+        roleText.fieldWidth = Std.int(FlxG.width / 0.67);
         roleText.text = role;
         add(roleText);
         finalRoleArray.push(roleText);
@@ -116,7 +117,10 @@ class CreditsState extends FlxUIState {
             finalRoleArray.push(new FlxText());
 
             var creatorText = new FlxText();
+            creatorText.autoSize = false;
             creatorText.size = 15;
+            creatorText.alignment = FlxTextAlign.RIGHT;
+            creatorText.fieldWidth = Std.int(FlxG.width / 0.67);
             creatorText.text = creator;
             add(creatorText);
             finalCreatorsArray.push(creatorText);
@@ -134,9 +138,9 @@ class CreditsState extends FlxUIState {
 
         for(element in _allCreditElements) {
             if (FlxG.keys.pressed.SPACE || FlxG.mouse.pressed){
-                element.y -= 2;           
+                element.y -= 2;
             } else {
-                element.y -= .5;           
+                element.y -= .5;
             }
         }
     }
