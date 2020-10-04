@@ -42,7 +42,7 @@ class LoganPlayerState extends FlxState {
 	{
 		FlxG.debugger.visible = true;
 		super.create();
-		FmodManager.PlaySong(FmodSongs.Song2);
+		FmodManager.PlaySong(FmodSongs.Level1);
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 
 		actions = new Actions();

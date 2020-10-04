@@ -1,5 +1,6 @@
 package states;
 
+import entities.ParentedSprite;
 import com.bitdecay.textpop.style.builtin.FloatAway;
 import com.bitdecay.textpop.style.Style;
 import flixel.text.FlxText;
@@ -123,12 +124,6 @@ class PlayState extends FlxState {
 			y += pixPerBeat;
 		}
 		#end
-
-		// Debug for testing purposes
-		// for (i in 0...100) {
-		// 	var ship = new Ship(laneCoords[i % 5], 0, false);
-		// 	beatEvents.push(new BeatEvent(i * i, i * 0.1, ship));
-		// }
 
 		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[0], 0)));
 		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[1], 0)));
@@ -273,9 +268,12 @@ class PlayState extends FlxState {
 		}
 	}
 
-	private function handlePlayerCarOverlap(player: Ship, ai: Ship) {
-		beaters.remove(ai);
-		ai.kill();
+	private function handlePlayerCarOverlap(player: ParentedSprite, ai: ParentedSprite) {
+		if (player.allowCollisions == 0 || ai.allowCollisions == 0) {
+			// ignore this. likely a collision with the jets
+		}
+		beaters.remove(cast(ai.parent, Ship));
+		cast(ai.parent, Ship).kill();
 		resetCombo();
 		TextPop.pop(Std.int(player.x), Std.int(player.y), "Collision", new FlyBack(-300, 1), 25);
 	}

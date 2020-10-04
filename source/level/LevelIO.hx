@@ -10,31 +10,12 @@ import js.Browser.document;
 class LevelIO {
     public static function loadFromJSON(path: String): Level {
         var jsonFileStr = Assets.getBytes(path).toString();
-        var lvlJson = haxe.Json.parse(jsonFileStr);
-
-        var lvl = new Level();
-        lvl.name = lvlJson.name;
-        lvl.beatEvents = lvlJson.beatEvents.map((be) -> {
-            return new BeatEvent(be.beat, be.speed, new Ship(be.ship.x, 0, false));
-        });
-
-        return lvl;
+        var lvl = haxe.Json.parse(jsonFileStr);
+        return cast (lvl, Level);
     }
 
     public static function saveToJSON(path: String, lvl: Level) {
-        var lvlJson = {
-            name: lvl.name,
-            beatEvents: lvl.beatEvents.map((be) -> {
-                return {
-                    beat: be.impactBeat,
-                    speed: be.speed,
-                    ship: {
-                        x: be.sprite.x,
-                    }
-                };
-            }),
-        };
-        var jsonFileStr:String = haxe.Json.stringify(lvlJson, null, "  ");
+        var jsonFileStr:String = haxe.Json.stringify(lvl, null, "  ");
 
         #if html5
         saveToJSONWeb(jsonFileStr);
