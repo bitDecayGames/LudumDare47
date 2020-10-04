@@ -198,6 +198,7 @@ class JakeState extends FlxState {
 		beatAwaitingProcessing = true;
 
 		FlxG.camera.shake(0.005, 0.05);
+		FlxG.camera.flash(0x22FFFFFF, 0.3);
 
 		currentBeat++;
 
