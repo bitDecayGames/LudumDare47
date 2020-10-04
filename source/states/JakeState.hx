@@ -1,5 +1,13 @@
 package states;
 
+import openfl.filters.BitmapFilter;
+import openfl.display.BitmapData;
+import openfl.display.ShaderInput;
+import openfl.filters.ShaderFilter;
+import shaders.Vhs;
+import entities.ParentedSprite;
+import com.bitdecay.textpop.style.builtin.FloatAway;
+import com.bitdecay.textpop.style.Style;
 import flixel.text.FlxText;
 import com.bitdecay.textpop.TextPop;
 import flixel.tweens.motion.LinearMotion;
@@ -24,15 +32,14 @@ import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import level.Ground;
-import level.LevelIO;
 import level.Level;
-import level.LevelEditor;
 import entities.BeatSpeaker;
+import textpop.FlyBack;
 import openfl.filters.BlurFilter;
 
 using extensions.FlxObjectExt;
 
-class JakeState extends FlxState {
+class PlayState extends FlxState {
 
 	// TODO: These wil likely live somewhere else ultimately
 	var bpm = 130.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
@@ -43,7 +50,12 @@ class JakeState extends FlxState {
 	var comboText:FlxText;
 	var comboCounter:Int = 0;
 
+	var filters:Array<BitmapFilter> = new Array<BitmapFilter>();
 	var blurFilter:BlurFilter = new BlurFilter(4, 0, openfl.filters.BitmapFilterQuality.MEDIUM);
+
+	var isShaderActive:Bool;
+	var shader:Vhs;
+	var vhsFilter:ShaderFilter;
 
 	var lastTick:Float = 0.0;
 	var tickDiff:Float = 0.0;
@@ -88,18 +100,11 @@ class JakeState extends FlxState {
 	var beatSpeaker:BeatSpeaker;
 
 	var ground: Ground = new Ground();
-	
-	var levelEditor: LevelEditor;
-	var level: Level;
-
-	var paused: Bool = false;
+	var level:Level;
 
 	override public function create()
 	{
 		super.create();
-
-		levelEditor = new LevelEditor(laneCoords);
-		add(levelEditor);
 
 		comboText = new FlxText(10, FlxG.height-45, 100, "0", 30);
 		add(comboText);
@@ -109,6 +114,19 @@ class JakeState extends FlxState {
 		trace("timePerBeat: " + timePerBeat);
 		trace("halfTime: " + halfTime);
 
+
+		var shaderInput = new ShaderInput<BitmapData>();
+		var noiseBitmap = new FlxSprite(0,0, "assets/images/NoiseTexture.png");
+		shaderInput.input = noiseBitmap.pixels.clone();
+		
+		camera.setFilters(filters);
+
+		shader = new Vhs();
+		shader.iTime.value = [0];
+		shader.noiseTexture = shaderInput;
+		vhsFilter = new ShaderFilter(shader);
+
+		FlxG.debugger.visible = true;
 		FmodManager.PlaySong(FmodSongs.Level1);
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 
@@ -129,7 +147,8 @@ class JakeState extends FlxState {
 		}
 		#end
 
-		level = new Level(laneCoords);
+		level = new Level();
+		level.initDefaultBeatEvents(laneCoords);
 		parse(level.beatEvents);
 
 		add(beaters);
@@ -138,7 +157,7 @@ class JakeState extends FlxState {
 
 		player = new Player(0, 0);
 		player.x = laneCoords[playerLane] - player.width/2;
-		player.y = FlxG.height - 50 - player.height;
+		player.y = (focusBeat * pixPerBeat) + 30;
 
 		playerGroup.add(player);
 		add(playerGroup);
@@ -149,26 +168,22 @@ class JakeState extends FlxState {
 
 	private function parse(events:Array<BeatEvent>) {
 		for (e in events) {
-			parseBeatEvent(e);
+			// floor this so we make sure to render sooner rather than later
+			var beginRenderBeat = Math.floor(1.0 * e.impactBeat - (focusBeat / e.speed));
+
+			trace(e, " starting at ", beginRenderBeat);
+
+			//              the impact y-coord  minus   how many beats on screen   times  how fast our ship moves
+			e.sprite.y = (focusBeat * pixPerBeat) - (e.impactBeat - beginRenderBeat) * pixPerBeat * e.speed;
+			// we want things to be lined up based on the bottom of the ship
+			e.sprite.y -= e.sprite.body.height;
+			e.sprite.startY = e.sprite.y;
+			if (!renderEvents.exists(beginRenderBeat)) {
+				renderEvents[beginRenderBeat] = new Array<BeatEvent>();
+			}
+
+			renderEvents[beginRenderBeat].push(e);
 		}
-	}
-
-	private function parseBeatEvent(e: BeatEvent) {
-		// floor this so we make sure to render sooner rather than later
-		var beginRenderBeat = Math.floor(1.0 * e.impactBeat - (focusBeat / e.speed));
-
-		trace(e, " starting at ", beginRenderBeat);
-
-		// the impact y-coord  minus   how many beats on screen   times  how fast our ship moves
-		e.sprite.y = (focusBeat * pixPerBeat) - (e.impactBeat - beginRenderBeat) * pixPerBeat * e.speed;
-		// we want things to be lined up based on the bottom of the ship
-		e.sprite.y -= e.sprite.height;
-		e.sprite.startY = e.sprite.y;
-		if (!renderEvents.exists(beginRenderBeat)) {
-			renderEvents[beginRenderBeat] = new Array<BeatEvent>();
-		}
-
-		renderEvents[beginRenderBeat].push(e);
 	}
 
 	private function beat() {
@@ -177,9 +192,10 @@ class JakeState extends FlxState {
 		beatAwaitingProcessing = true;
 
 		FlxG.camera.shake(0.005, 0.05);
-		camera.setFilters([blurFilter]);
-		Timer.delay(()->{camera.setFilters([]);}, 100);
-		FlxG.camera.flash(0x22FFFFFF, 0.3);
+		filters.push(blurFilter);
+		Timer.delay(()->{
+			filters.remove(blurFilter);
+		}, 100);
 
 		currentBeat++;
 
@@ -232,45 +248,37 @@ class JakeState extends FlxState {
 				player.x,
 				player.y,
 				laneCoords[playerLane] - player.width/2,
-				FlxG.height - 50 - player.height,
+				player.y,
 				timePerBeat / 2
 				);
 		}
 	}
 
-	private function handlePlayerCarOverlap(player: Ship, ai: Ship) {
-		beaters.remove(ai);
-		ai.kill();
+	private function handlePlayerCarOverlap(player: ParentedSprite, ai: ParentedSprite) {
+		if (player.allowCollisions == 0 || ai.allowCollisions == 0) {
+			// ignore this. likely a collision with the jets
+		}
+		beaters.remove(cast(ai.parent, Ship));
+		cast(ai.parent, Ship).kill();
 		resetCombo();
-		TextPop.pop(Std.int(player.x), Std.int(player.y), "Collision", null, 25);
+		TextPop.pop(Std.int(player.x), Std.int(player.y), "Collision", new FlyBack(-300, 1), 25);
 	}
 
 	override public function update(elapsed:Float) {
-		// Pause game
-		if (FlxG.keys.justPressed.SPACE)
-		{
-			paused = !paused;
-			if (paused) {
-				FmodManager.PauseSong();
-			} else {
-				FmodManager.UnpauseSong();
-			}
-		}
-
-		if (paused) {
-			return;
-		}
-
 		super.update(elapsed);
-
-		// Level Editor
-		if (FlxG.mouse.justPressed) {
-			var be = levelEditor.addBeatEvent(level, FlxG.mouse.getScreenPosition(), currentBeat);
-			parseBeatEvent(be);
-		}
-
 		var timestamp = Date.now().getTime();
 		FmodManager.Update();
+
+		shader.iTime.value[0] += elapsed;
+		if (FlxG.keys.justPressed.P)
+		{
+				isShaderActive = !isShaderActive;
+				if (isShaderActive) {
+					filters.push(vhsFilter);
+				} else {
+					filters.remove(vhsFilter);
+				}
+		}
 
 		if (playerTween == null || playerTween.finished) {
 			if (actions.left.check()) {
@@ -300,22 +308,21 @@ class JakeState extends FlxState {
 		trace("Diff: " + diff);
 
 		if (diff < timePerBeat / 4) {
-			TextPop.pop(Std.int(player.x), Std.int(player.y), "Great!", null, 25);
+			TextPop.pop(Std.int(player.x), Std.int(player.y), "Great!", new FlyBack(-300, 1), 25);
 			comboCounter++;
-			player.color = FlxColor.BLUE;
 		} else if (diff < timePerBeat / 3) {
-			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", null, 25);
+			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", new FlyBack(-300, 1), 25);
 			resetCombo();
-			player.color = FlxColor.YELLOW;
 		} else {
-			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", null, 25);
+			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", new FlyBack(-300, 1), 25);
 			resetCombo();
-			player.color = FlxColor.RED;
 		}
 	}
 
 	private function resetCombo() {
 		comboCounter = 0;
+		FmodManager.PlaySoundOneShot(FmodSFX.ComboLost);
+		FmodManager.SetEventParameterOnSong("Miss", 1);
 	}
 
 	override public function onFocusLost():Void {
