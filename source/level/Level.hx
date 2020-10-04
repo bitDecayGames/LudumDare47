@@ -16,15 +16,16 @@ class Level {
 
 	public var beatEvents:Array<BeatEvent> = [];
 
+	public var nextSegmentToLoad = 0;
 	public var trackSegments:Array<FlxTilemap> = [];
 
-	// intended to be a guide for us to use to rewind properly
-	public var visitedSegments:Array<Int> = [];
 	public var activeTrack:FlxTilemap;
 	public var queuedTrack:FlxTilemap;
 
 	public var background:FlxSprite;
 	public var groundSpeed:Float = 4;
+
+	public var rewind:Bool = false;
 
 	public function new(bpm: Float, pixelsPerBeat: Int) {
 		this.bpm = bpm;
@@ -84,15 +85,13 @@ class Level {
 		}
 	}
 
-	public function loadOgmoMap(ogmoFile:String, levelFile:String) {
-		var map = new FlxOgmo3Loader(ogmoFile, levelFile);
-
-		var track = map.loadTilemap(AssetPaths.tiles__png, "Track");
-		addSegment(track);
-
-		var newMapWhoDis = new FlxOgmo3Loader(ogmoFile, AssetPaths.segment01__json);
-		var track2 = newMapWhoDis.loadTilemap(AssetPaths.tiles__png, "Track");
-		addSegment(track2);
+	public function loadOgmoMap() {
+		var ogmoFile = AssetPaths.segment00__ogmo;
+		load(ogmoFile, AssetPaths.segment00__json);
+		load(ogmoFile, AssetPaths.segment01__json);
+		load(ogmoFile, AssetPaths.segment02__json);
+		load(ogmoFile, AssetPaths.segment03__json);
+		load(ogmoFile, AssetPaths.segment04__json);
 
 		// TODO May not need to do this
 		// FlxG.worldBounds.set(0, 0, walls.width, walls.height);
@@ -112,7 +111,15 @@ class Level {
 		// 			throw 'Unrecognized entity name: ${entity.name}';
 		// 	}
 		// }, "Entities");
-		queueSegmentIfNeeded();
+
+		queueSegmentIfNeeded(rewind);
+	}
+
+	private function load(ogmoFile:String, levelFile:String) {
+		var map = new FlxOgmo3Loader(ogmoFile, levelFile);
+
+		var track = map.loadTilemap(AssetPaths.tiles__png, "Track");
+		addSegment(track);
 	}
 
 	private function addSegment(s:FlxTilemap) {
@@ -124,40 +131,68 @@ class Level {
 	public function update(elapsed:Float) {
 		var bps = bpm / 60;
 		var dy = elapsed * bps * pixelsPerBeat * groundSpeed;
-		activeTrack.y += dy;
-		queuedTrack.y += dy;
 
-		if (activeTrack.y > FlxG.height) {
-			activeTrack.kill();
-			activeTrack = queuedTrack;
-			queuedTrack = null;
+		if (rewind) {
+			activeTrack.y -= dy;
+			queuedTrack.y -= dy;
+
+			if (activeTrack.y < -activeTrack.height) {
+				activeTrack.kill();
+				activeTrack = queuedTrack;
+				queuedTrack = null;
+			}
+		} else {
+			activeTrack.y += dy;
+			queuedTrack.y += dy;
+
+			if (activeTrack.y > FlxG.height) {
+				activeTrack.kill();
+				activeTrack = queuedTrack;
+				queuedTrack = null;
+			}
 		}
 
-		queueSegmentIfNeeded();
+
+		queueSegmentIfNeeded(rewind);
 	}
 
-	private function queueSegmentIfNeeded() {
+	private function queueSegmentIfNeeded(rewind:Bool) {
 
 		if (activeTrack == null) {
 			// first segment
-			activeTrack = trackSegments[0];
+			activeTrack = trackSegments[nextSegmentToLoad++ % trackSegments.length];
 			activeTrack.revive();
 			activeTrack.y = -activeTrack.height + FlxG.height;
-			visitedSegments.push(0);
 		}
+
 
 		if (queuedTrack == null) {
-			// TODO: this will be randomized, storing what we visit so we can rewind propery
-			if (activeTrack == trackSegments[0]) {
-				queuedTrack = trackSegments[1];
-				visitedSegments.push(1);
-			} else {
-				queuedTrack = trackSegments[0];
-				visitedSegments.push(0);
-			}
-
+			queuedTrack = trackSegments[nextSegmentNum(rewind)];
 			queuedTrack.revive();
-			queuedTrack.y = activeTrack.y - queuedTrack.height;
+
+			if (rewind) {
+				queuedTrack.y = activeTrack.y + activeTrack.height;
+			} else {
+				queuedTrack.y = activeTrack.y - queuedTrack.height;
+			}
 		}
+	}
+
+	private function nextSegmentNum(rewind:Bool):Int {
+		if (rewind) {
+			nextSegmentToLoad--;
+		} else {
+			nextSegmentToLoad++;
+		}
+
+		if (nextSegmentToLoad >= trackSegments.length) {
+			nextSegmentToLoad -= trackSegments.length;
+		}
+
+		if (nextSegmentToLoad < 0) {
+			nextSegmentToLoad += trackSegments.length;
+		}
+
+		return nextSegmentToLoad;
 	}
 }
