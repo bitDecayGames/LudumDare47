@@ -11,7 +11,7 @@ class Level {
 	public var pixelsPerBeat: Int = 0;
 
 	public var beatEvents:Array<BeatEvent> = [];
-	public var walls:FlxTilemap;
+	public var track:FlxTilemap;
 	public var background:FlxTilemap;
 
 	public function new(bpm: Float, pixelsPerBeat: Int) {
@@ -63,30 +63,41 @@ class Level {
 
 	public function addToState(state: FlxState) {
 		// state.add(background);
-		// state.add(walls);
+		state.add(track);
 	}
 	
-	public function loadOgmoMap(ogmoFile:String, levelFile:String, bpm: Float) {
+	public function loadOgmoMap(ogmoFile:String, levelFile:String) {
 		var map = new FlxOgmo3Loader(ogmoFile, levelFile);
 
 		// background = map.loadTilemap(AssetPaths.cityTiles__png, "Ground");
-		// walls = map.loadTilemap(AssetPaths.collisions__png, "Walls");
+		track = map.loadTilemap(AssetPaths.tiles__png, "Track");
+		track.x -= 55;
+		track.y = -track.height;
+		// TODO May not need to do this
 		// FlxG.worldBounds.set(0, 0, walls.width, walls.height);
 		// groundType = map.loadTilemap(AssetPaths.groundTypes__png, "GroundType");
 		// groundType.setTileProperties(1, FlxObject.ANY, setPlayerGroundType("concrete"));
 		// groundType.setTileProperties(2, FlxObject.ANY, setPlayerGroundType("grass"));
 		// groundType.setTileProperties(3, FlxObject.ANY, setPlayerGroundType("metal"));
 
-		map.loadEntities(function loadEntity(entity:EntityData) {
-			switch (entity.name) {
-				case "Ship":
-					var beat = Std.int(entity.y / pixelsPerBeat);
-					var speed = 1; // TODO Will this be on entity metadata?
-					beatEvents.push(new BeatEvent(beat, speed, new Ship(entity.x, 0)));
-					return;
-				default:
-					throw 'Unrecognized entity name: ${entity.name}';
-			}
-		}, "Entities");
+		// map.loadEntities(function loadEntity(entity:EntityData) {
+		// 	switch (entity.name) {
+		// 		case "Ship":
+		// 			var beat = Std.int(entity.y / pixelsPerBeat);
+		// 			var speed = 1; // TODO Will this be on entity metadata?
+		// 			beatEvents.push(new BeatEvent(beat, speed, new Ship(entity.x, 0)));
+		// 			return;
+		// 		default:
+		// 			throw 'Unrecognized entity name: ${entity.name}';
+		// 	}
+		// }, "Entities");
+	}
+
+	public function update(elapsed:Float) {
+		var bps = bpm / 60;
+		track.y += elapsed * bps * pixelsPerBeat * 4;
+		if (!track.isOnScreen()) {
+			track.y = -track.height;
+		}
 	}
 }
