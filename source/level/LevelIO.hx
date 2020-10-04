@@ -34,7 +34,7 @@ class LevelIO {
                 };
             }),
         };
-        var jsonFileStr:String = haxe.Json.stringify(lvlJson);
+        var jsonFileStr:String = haxe.Json.stringify(lvlJson, null, "  ");
 
         #if html5
         saveToJSONWeb(jsonFileStr);
