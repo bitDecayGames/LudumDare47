@@ -114,7 +114,7 @@ class PlayState extends FlxState {
 		level = new Level(defaultBpm, defaultPixPerBeat);
 		level.initDefaultBeatEvents(laneCoords);
 		parse(level.beatEvents);
-		level.loadOgmoMap(AssetPaths.segment00__ogmo, AssetPaths.segment00__json);
+		level.loadOgmoMap();
 		level.addToState(this);
 
 		comboText = new FlxText(10, FlxG.height-45, 100, "0", 30);
