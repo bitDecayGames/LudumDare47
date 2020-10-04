@@ -1,5 +1,6 @@
 package states;
 
+import flixel.FlxObject;
 import openfl.filters.BitmapFilter;
 import openfl.display.BitmapData;
 import openfl.display.ShaderInput;
@@ -56,6 +57,11 @@ class PlayState extends FlxState {
 	var isShaderActive:Bool;
 	var shader:Vhs;
 	var vhsFilter:ShaderFilter;
+	
+	// Failure text
+	var _txtDontGiveUp:FlxText;
+    var _txtPressSpace:FlxText;
+    var _showRetryText:Bool = false;
 
 	var lastTick:Float = 0.0;
 	var tickDiff:Float = 0.0;
@@ -113,6 +119,8 @@ class PlayState extends FlxState {
 
 		comboText = new FlxText(10, FlxG.height-45, 100, "0", 30);
 		add(comboText);
+
+		loadRetryText();
 
 		timePerBeat = 60.0/level.bpm;
 		halfTime = timePerBeat/2;
@@ -255,6 +263,16 @@ class PlayState extends FlxState {
 		}
 		beaters.remove(cast(ai.parent, Ship));
 		cast(ai.parent, Ship).kill();
+		FmodManager.PlaySoundOneShot(FmodSFX.Explosion);
+		FmodManager.SetEventParameterOnSong("Silence", 1);
+		disableParentedSprite(player);
+		var shipExplosion:FlxSprite = new FlxSprite();
+		shipExplosion.loadGraphic(AssetPaths.shipExplode__png, true, 160, 980, true);
+		shipExplosion.setPosition(player.x-50, player.y-850);
+		shipExplosion.animation.add("explode", [0,1,2,3,4,5,6,7,8,9,10,11], 12, false);
+		shipExplosion.animation.play("explode");
+		FlxTween.tween(shipExplosion, { x: shipExplosion.x, y: shipExplosion.y+1200}, 1.2);
+		add(shipExplosion);
 		resetCombo();
 		TextPop.pop(Std.int(player.x), Std.int(player.y), "Collision", new FlyBack(-300, 1), 25);
 	}
@@ -289,6 +307,21 @@ class PlayState extends FlxState {
 			}
 		}
 
+		_txtDontGiveUp.x = FlxG.width/2 - _txtDontGiveUp.width/2;
+        _txtPressSpace.x = FlxG.width/2 - _txtPressSpace.width/2;
+
+        if (FlxG.keys.justPressed.O) {
+            _showRetryText = !_showRetryText;
+        }
+
+        if (_showRetryText) {
+            _txtDontGiveUp.visible = true;
+            _txtPressSpace.visible = true;
+        } else {
+            _txtDontGiveUp.visible = false;
+            _txtPressSpace.visible = false;
+        }
+
 		FlxG.overlap(playerGroup, beaters, handlePlayerCarOverlap);
 		comboText.text = Std.string(comboCounter);
 
@@ -314,6 +347,40 @@ class PlayState extends FlxState {
 			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", new FlyBack(-300, 1), 25);
 			resetCombo();
 		}
+	}
+
+	private function disableParentedSprite(parentedSprite: ParentedSprite) {
+		parentedSprite.visible = false;
+		parentedSprite.parent.visible = false;
+		parentedSprite.active = false;
+		parentedSprite.parent.active = false;
+		parentedSprite.allowCollisions = 0;
+	}
+
+	private function enableParentedSprite(parentedSprite: ParentedSprite) {
+		parentedSprite.visible = true;
+		parentedSprite.parent.visible = true;
+		parentedSprite.active = true;
+		parentedSprite.parent.active = true;
+		parentedSprite.allowCollisions = FlxObject.ANY;
+	}
+
+	private function loadRetryText() {
+		_txtDontGiveUp = new FlxText();
+        _txtDontGiveUp.setPosition(FlxG.width/2, FlxG.height/4);
+        _txtDontGiveUp.size = 30;
+        _txtDontGiveUp.alignment = FlxTextAlign.CENTER;
+        _txtDontGiveUp.text = "Don't give up!";
+
+        add(_txtDontGiveUp);
+
+        _txtPressSpace = new FlxText();
+        _txtPressSpace.setPosition(FlxG.width/2, FlxG.height/3);
+        _txtPressSpace.size = 20;
+        _txtPressSpace.alignment = FlxTextAlign.CENTER;
+        _txtPressSpace.text = "Press Spacebar to continue";
+
+        add(_txtPressSpace);
 	}
 
 	private function resetCombo() {
