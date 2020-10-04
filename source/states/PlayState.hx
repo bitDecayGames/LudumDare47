@@ -28,6 +28,8 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import level.Ground;
 import entities.BeatSpeaker;
 import textpop.FlyBack;
+import openfl.filters.BlurFilter;
+
 
 using extensions.FlxObjectExt;
 
@@ -41,6 +43,8 @@ class PlayState extends FlxState {
 
 	var comboText:FlxText;
 	var comboCounter:Int = 0;
+
+	var blurFilter:BlurFilter = new BlurFilter(4, 0, openfl.filters.BitmapFilterQuality.MEDIUM);
 
 	var lastTick:Float = 0.0;
 	var tickDiff:Float = 0.0;
@@ -209,7 +213,8 @@ class PlayState extends FlxState {
 		beatAwaitingProcessing = true;
 
 		FlxG.camera.shake(0.005, 0.05);
-		FlxG.camera.flash(0x22FFFFFF, 0.3);
+		camera.setFilters([blurFilter]);
+		Timer.delay(()->{camera.setFilters([]);}, 100);
 
 		currentBeat++;
 
