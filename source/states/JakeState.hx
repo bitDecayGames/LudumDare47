@@ -211,6 +211,7 @@ class JakeState extends FlxState {
 		FlxG.camera.shake(0.005, 0.05);
 		camera.setFilters([blurFilter]);
 		Timer.delay(()->{camera.setFilters([]);}, 100);
+		FlxG.camera.flash(0x22FFFFFF, 0.3);
 
 		currentBeat++;
 

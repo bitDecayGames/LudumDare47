@@ -11,7 +11,7 @@ class Ship extends FlxSprite {
 	public var startY:Float = 0;
 	public var beat:Int = 0;
 
-	var hitbox = new FlxPoint(80, 110);
+	var hitbox = new FlxPoint(80, 100);
 
 	public function new(x:Float, y:Float) {
 		super(x, y);
