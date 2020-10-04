@@ -52,11 +52,11 @@ class PlayState extends FlxState {
 
 	var filters:Array<BitmapFilter> = new Array<BitmapFilter>();
 	var blurFilter:BlurFilter = new BlurFilter(4, 0, openfl.filters.BitmapFilterQuality.MEDIUM);
-	
+
 	var isShaderActive:Bool;
 	var shader:Vhs;
 	var vhsFilter:ShaderFilter;
-	
+
 	var lastTick:Float = 0.0;
 	var tickDiff:Float = 0.0;
 
@@ -214,7 +214,7 @@ class PlayState extends FlxState {
 			//              the impact y-coord  minus   how many beats on screen   times  how fast our ship moves
 			e.sprite.y = (focusBeat * pixPerBeat) - (e.impactBeat - beginRenderBeat) * pixPerBeat * e.speed;
 			// we want things to be lined up based on the bottom of the ship
-			e.sprite.y -= e.sprite.height;
+			e.sprite.y -= e.sprite.body.height;
 			e.sprite.startY = e.sprite.y;
 			if (!renderEvents.exists(beginRenderBeat)) {
 				renderEvents[beginRenderBeat] = new Array<BeatEvent>();
