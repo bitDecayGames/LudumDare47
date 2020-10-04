@@ -14,6 +14,10 @@ class FmodSongs {
 }
 
 class FmodSFX {
+    public static inline var ComboLost:String = "event:/SFX/Combo/ComboLost";
     public static inline var MenuHover:String = "event:/SFX/Menu/MenuHover";
     public static inline var MenuSelect:String = "event:/SFX/Menu/MenuSelect";
+    public static inline var Metranome130:String = "event:/SFX/Metranome/Metranome130";
+    public static inline var Metranome135:String = "event:/SFX/Metranome/Metranome135";
+    public static inline var Rewind:String = "event:/SFX/Rewind/Rewind";
 }

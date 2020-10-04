@@ -1,5 +1,10 @@
 package states;
 
+import openfl.filters.BitmapFilter;
+import openfl.display.BitmapData;
+import openfl.display.ShaderInput;
+import openfl.filters.ShaderFilter;
+import shaders.Vhs;
 import entities.ParentedSprite;
 import com.bitdecay.textpop.style.builtin.FloatAway;
 import com.bitdecay.textpop.style.Style;
@@ -26,33 +31,37 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.group.FlxGroup.FlxTypedGroup;
-import level.Ground;
+import level.Level;
 import entities.BeatSpeaker;
 import textpop.FlyBack;
 import openfl.filters.BlurFilter;
-
 
 using extensions.FlxObjectExt;
 
 class PlayState extends FlxState {
 
 	// TODO: These wil likely live somewhere else ultimately
-	var bpm = 130.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
-	var pixPerBeat = 100;
+	var defaultBpm = 130.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
+	var defaultPixPerBeat = 100;
+
 	var screenBeatSpaces = (FlxG.height / 100);
 	var focusBeat = 5; // this is the beat where things align on screen (the one right in front of the player)
 
 	var comboText:FlxText;
 	var comboCounter:Int = 0;
 
+	var filters:Array<BitmapFilter> = new Array<BitmapFilter>();
 	var blurFilter:BlurFilter = new BlurFilter(4, 0, openfl.filters.BitmapFilterQuality.MEDIUM);
+
+	var isShaderActive:Bool;
+	var shader:Vhs;
+	var vhsFilter:ShaderFilter;
 
 	var lastTick:Float = 0.0;
 	var tickDiff:Float = 0.0;
 
 	var currentBeat:Int = 0;
 
-	var beatEvents:Array<BeatEvent> = [];
 	var renderEvents:Map<Int, Array<BeatEvent>> = new Map();
 
 	var beaters:FlxTypedGroup<Ship> = new FlxTypedGroup<Ship>();
@@ -90,82 +99,54 @@ class PlayState extends FlxState {
 
 	var beatSpeaker:BeatSpeaker;
 
-	var ground: Ground = new Ground();
+	var level:Level;
 
 	override public function create()
 	{
 		super.create();
 
+		level = new Level(defaultBpm, defaultPixPerBeat);
+		level.initDefaultBeatEvents(laneCoords);
+		parse(level.beatEvents);
+		level.loadOgmoMap(AssetPaths.segment00__ogmo, AssetPaths.segment00__json);
+		level.addToState(this);
+
 		comboText = new FlxText(10, FlxG.height-45, 100, "0", 30);
 		add(comboText);
 
-		timePerBeat = 60.0/bpm;
+		timePerBeat = 60.0/level.bpm;
 		halfTime = timePerBeat/2;
 		trace("timePerBeat: " + timePerBeat);
 		trace("halfTime: " + halfTime);
+
+		var shaderInput = new ShaderInput<BitmapData>();
+		var noiseBitmap = new FlxSprite(0,0, "assets/images/NoiseTexture.png");
+		shaderInput.input = noiseBitmap.pixels.clone();
+
+		camera.setFilters(filters);
+
+		shader = new Vhs();
+		shader.iTime.value = [0];
+		vhsFilter = new ShaderFilter(shader);
 
 		FlxG.debugger.visible = true;
 		FmodManager.PlaySong(FmodSongs.Level1);
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 
-		add(ground);
-
-		#if !FLX_NO_DEBUG
-		var y = 0;
-		while (y < FlxG.height) {
-			var divider = new FlxSprite(FlxG.width / 2, y, AssetPaths.divider__png);
-			divider.scale.set(FlxG.width / divider.width, 1);
-			add(divider);
-			if (y == focusBeat * pixPerBeat) {
-				divider.alpha = 1;
-			} else {
-				divider.alpha = 0.5;
-			}
-			y += pixPerBeat;
-		}
-		#end
-
-		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[0], 0)));
-		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[1], 0)));
-		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[3], 0)));
-		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[4], 0)));
-
-		beatEvents.push(new BeatEvent(14, 1, new Ship(laneCoords[2], 0)));
-
-		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[1], 0)));
-		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[2], 0)));
-		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[3], 0)));
-		beatEvents.push(new BeatEvent(20, 1, new Ship(laneCoords[4], 0)));
-
-		beatEvents.push(new BeatEvent(24, 1, new Ship(laneCoords[0], 0)));
-		beatEvents.push(new BeatEvent(25, 1, new Ship(laneCoords[1], 0)));
-		beatEvents.push(new BeatEvent(26, 1, new Ship(laneCoords[2], 0)));
-		beatEvents.push(new BeatEvent(27, 1, new Ship(laneCoords[3], 0)));
-
-		beatEvents.push(new BeatEvent(33, 1, new Ship(laneCoords[4], 0)));
-		beatEvents.push(new BeatEvent(34, 1, new Ship(laneCoords[3], 0)));
-		beatEvents.push(new BeatEvent(35, 1, new Ship(laneCoords[2], 0)));
-		beatEvents.push(new BeatEvent(36, 1, new Ship(laneCoords[1], 0)));
-
-		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[0], 0)));
-		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[1], 0)));
-		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[3], 0)));
-		beatEvents.push(new BeatEvent(45, 1, new Ship(laneCoords[4], 0)));
-
-		beatEvents.push(new BeatEvent(47, 1, new Ship(laneCoords[1], 0)));
-		beatEvents.push(new BeatEvent(47, 1, new Ship(laneCoords[3], 0)));
-
-		beatEvents.push(new BeatEvent(49, 1, new Ship(laneCoords[1], 0)));
-		beatEvents.push(new BeatEvent(49, 1, new Ship(laneCoords[3], 0)));
-
-		beatEvents.push(new BeatEvent(53, 2, new Ship(laneCoords[2], 0)));
-
-		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[0], 0)));
-		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[1], 0)));
-		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[3], 0)));
-		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[4], 0)));
-
-		parse(beatEvents);
+		// #if !FLX_NO_DEBUG
+		// var y = 0;
+		// while (y < FlxG.height) {
+		// 	var divider = new FlxSprite(FlxG.width / 2, y, AssetPaths.divider__png);
+		// 	divider.scale.set(FlxG.width / divider.width, 1);
+		// 	add(divider);
+		// 	if (y == focusBeat * level.pixelsPerBeat) {
+		// 		divider.alpha = 1;
+		// 	} else {
+		// 		divider.alpha = 0.5;
+		// 	}
+		// 	y += level.pixelsPerBeat;
+		// }
+		// #end
 
 		add(beaters);
 
@@ -173,7 +154,7 @@ class PlayState extends FlxState {
 
 		player = new Player(0, 0);
 		player.x = laneCoords[playerLane] - player.width/2;
-		player.y = (focusBeat * pixPerBeat) + 30;
+		player.y = (focusBeat * level.pixelsPerBeat) + 30;
 
 		playerGroup.add(player);
 		add(playerGroup);
@@ -187,12 +168,12 @@ class PlayState extends FlxState {
 			// floor this so we make sure to render sooner rather than later
 			var beginRenderBeat = Math.floor(1.0 * e.impactBeat - (focusBeat / e.speed));
 
-			trace(e, " starting at ", beginRenderBeat);
+			// trace(e, " starting at ", beginRenderBeat);
 
-			//              the impact y-coord  minus   how many beats on screen   times  how fast our ship moves
-			e.sprite.y = (focusBeat * pixPerBeat) - (e.impactBeat - beginRenderBeat) * pixPerBeat * e.speed;
+			// the impact y-coord  minus   how many beats on screen   times  how fast our ship moves
+			e.sprite.y = (focusBeat * level.pixelsPerBeat) - (e.impactBeat - beginRenderBeat) * level.pixelsPerBeat * e.speed;
 			// we want things to be lined up based on the bottom of the ship
-			e.sprite.y -= e.sprite.height;
+			e.sprite.y -= e.sprite.body.height;
 			e.sprite.startY = e.sprite.y;
 			if (!renderEvents.exists(beginRenderBeat)) {
 				renderEvents[beginRenderBeat] = new Array<BeatEvent>();
@@ -208,8 +189,10 @@ class PlayState extends FlxState {
 		beatAwaitingProcessing = true;
 
 		FlxG.camera.shake(0.005, 0.05);
-		camera.setFilters([blurFilter]);
-		Timer.delay(()->{camera.setFilters([]);}, 100);
+		filters.push(blurFilter);
+		Timer.delay(()->{
+			filters.remove(blurFilter);
+		}, 100);
 
 		currentBeat++;
 
@@ -223,7 +206,7 @@ class PlayState extends FlxState {
 
 		if (renderEvents.exists(currentBeat)) {
 			for (e in renderEvents[currentBeat]) {
-				trace("adding {} on beat {}", e, currentBeat);
+				// trace("adding {} on beat {}", e, currentBeat);
 				beaters.add(e.sprite);
 				add(e.sprite);
 				e.sprite.speed = e.speed;
@@ -239,12 +222,10 @@ class PlayState extends FlxState {
 				ship.x,
 				ship.y,
 				ship.x,
-				ship.startY + ship.beat * (ship.speed * pixPerBeat),
-				60.0 / bpm)
+				ship.startY + ship.beat * (ship.speed * level.pixelsPerBeat),
+				60.0 / level.bpm)
 			);
 		}
-
-		ground.handleBeat();
 	}
 
 	private function resetBeatVars() {
@@ -283,6 +264,17 @@ class PlayState extends FlxState {
 		var timestamp = Date.now().getTime();
 		FmodManager.Update();
 
+		shader.iTime.value[0] += elapsed;
+		if (FlxG.keys.justPressed.P)
+		{
+				isShaderActive = !isShaderActive;
+				if (isShaderActive) {
+					filters.push(vhsFilter);
+				} else {
+					filters.remove(vhsFilter);
+				}
+		}
+
 		if (playerTween == null || playerTween.finished) {
 			if (actions.left.check()) {
 				targetPlayerLane = playerLane - 1;
@@ -299,34 +291,35 @@ class PlayState extends FlxState {
 
 		FlxG.overlap(playerGroup, beaters, handlePlayerCarOverlap);
 		comboText.text = Std.string(comboCounter);
+
+		level.update(elapsed);
 	}
 
 	private function calculateBeatScore(ts:Float) {
 		var diff = Math.abs(ts - beatTime) / 1000;
-		trace("RawDiff: " + diff);
+		// trace("RawDiff: " + diff);
 		if (diff > halfTime) {
 			diff = Math.abs(diff - timePerBeat);
 		}
 
-		trace("Diff: " + diff);
+		// trace("Diff: " + diff);
 
 		if (diff < timePerBeat / 4) {
 			TextPop.pop(Std.int(player.x), Std.int(player.y), "Great!", new FlyBack(-300, 1), 25);
 			comboCounter++;
-			player.color = FlxColor.BLUE;
 		} else if (diff < timePerBeat / 3) {
 			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", new FlyBack(-300, 1), 25);
 			resetCombo();
-			player.color = FlxColor.YELLOW;
 		} else {
 			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", new FlyBack(-300, 1), 25);
 			resetCombo();
-			player.color = FlxColor.RED;
 		}
 	}
 
 	private function resetCombo() {
 		comboCounter = 0;
+		FmodManager.PlaySoundOneShot(FmodSFX.ComboLost);
+		FmodManager.SetEventParameterOnSong("Miss", 1);
 	}
 
 	override public function onFocusLost():Void {

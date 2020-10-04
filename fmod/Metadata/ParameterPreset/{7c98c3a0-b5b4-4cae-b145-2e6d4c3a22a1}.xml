@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.00.00">
+	<object class="ParameterPreset" id="{7c98c3a0-b5b4-4cae-b145-2e6d4c3a22a1}">
+		<property name="name">
+			<value>Miss</value>
+		</property>
+		<relationship name="folder">
+			<destination>{da9bea1d-65f6-4eb5-8299-adf0fee0fa69}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{ebca2b72-050c-49e4-9914-7e9a46cf99df}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{ebca2b72-050c-49e4-9914-7e9a46cf99df}">
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+		<property name="velocity">
+			<value>-0.5</value>
+		</property>
+	</object>
+</objects>
