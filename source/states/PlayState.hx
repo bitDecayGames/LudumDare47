@@ -1,5 +1,7 @@
 package states;
 
+import com.bitdecay.textpop.style.builtin.FloatAway;
+import com.bitdecay.textpop.style.Style;
 import flixel.text.FlxText;
 import com.bitdecay.textpop.TextPop;
 import flixel.tweens.motion.LinearMotion;
@@ -25,6 +27,9 @@ import flixel.FlxState;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import level.Ground;
 import entities.BeatSpeaker;
+import textpop.FlyBack;
+import openfl.filters.BlurFilter;
+
 
 using extensions.FlxObjectExt;
 
@@ -38,6 +43,8 @@ class PlayState extends FlxState {
 
 	var comboText:FlxText;
 	var comboCounter:Int = 0;
+
+	var blurFilter:BlurFilter = new BlurFilter(4, 0, openfl.filters.BitmapFilterQuality.MEDIUM);
 
 	var lastTick:Float = 0.0;
 	var tickDiff:Float = 0.0;
@@ -206,7 +213,8 @@ class PlayState extends FlxState {
 		beatAwaitingProcessing = true;
 
 		FlxG.camera.shake(0.005, 0.05);
-		FlxG.camera.flash(0x22FFFFFF, 0.3);
+		camera.setFilters([blurFilter]);
+		Timer.delay(()->{camera.setFilters([]);}, 100);
 
 		currentBeat++;
 
@@ -269,7 +277,7 @@ class PlayState extends FlxState {
 		beaters.remove(ai);
 		ai.kill();
 		resetCombo();
-		TextPop.pop(Std.int(player.x), Std.int(player.y), "Collision", null, 25);
+		TextPop.pop(Std.int(player.x), Std.int(player.y), "Collision", new FlyBack(-300, 1), 25);
 	}
 
 	override public function update(elapsed:Float) {
@@ -305,15 +313,15 @@ class PlayState extends FlxState {
 		trace("Diff: " + diff);
 
 		if (diff < timePerBeat / 4) {
-			TextPop.pop(Std.int(player.x), Std.int(player.y), "Great!", null, 25);
+			TextPop.pop(Std.int(player.x), Std.int(player.y), "Great!", new FlyBack(-300, 1), 25);
 			comboCounter++;
 			player.color = FlxColor.BLUE;
 		} else if (diff < timePerBeat / 3) {
-			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", null, 25);
+			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", new FlyBack(-300, 1), 25);
 			resetCombo();
 			player.color = FlxColor.YELLOW;
 		} else {
-			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", null, 25);
+			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", new FlyBack(-300, 1), 25);
 			resetCombo();
 			player.color = FlxColor.RED;
 		}
