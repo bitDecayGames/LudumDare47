@@ -1,11 +1,12 @@
 package entities;
 
+import flixel.group.FlxSpriteGroup;
 import flixel.FlxSprite;
 import flixel.math.FlxPoint;
 
 using extensions.FlxObjectExt;
 
-class Ship extends FlxSprite {
+class Ship extends FlxSpriteGroup {
 
 	public var speed:Float = 0;
 	public var startY:Float = 0;
@@ -13,16 +14,28 @@ class Ship extends FlxSprite {
 
 	var hitbox = new FlxPoint(80, 100);
 
+	var body:ParentedSprite;
+	var jets:ParentedSprite;
+
 	public function new(x:Float, y:Float) {
 		super(x, y);
-		loadGraphic(AssetPaths.ship0__png, true, 90, 135);
-		offset.set((width - hitbox.x) / 2, height - hitbox.y);
+		body = new ParentedSprite(this);
+		body.loadGraphic(AssetPaths.ship0__png, true, 90, 135);
+		body.setSize(hitbox.x, hitbox.y);
+		body.offset.set(5, body.height - hitbox.y + 35);
+		this.setMidpoint(x - body.width/2, y);
+		body.animation.add("idle", [0]);
+		body.animation.play("idle");
+		add(body);
 
-		setSize(hitbox.x, hitbox.y);
-		this.setMidpoint(x, y);
+		jets = new ParentedSprite(this);
+		jets.loadGraphic(AssetPaths.jetsShip0__png, true, 45, 80);
+		jets.setPosition(17, 122 - 35);
+		jets.allowCollisions = 0;
 
-		animation.add("idle", [0]);
-		animation.play("idle");
+		jets.animation.add("idle", [0]);
+		jets.animation.play("idle");
+		add(jets);
 	}
 
 	override public function update(delta:Float) {

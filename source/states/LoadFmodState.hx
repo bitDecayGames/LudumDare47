@@ -22,7 +22,7 @@ class LoadFmodState extends FlxState {
     override public function update(elapsed:Float):Void {
         if(FmodManager.IsInitialized()){
             #if logan
-            FlxG.switchState(new JakeState());
+            FlxG.switchState(new PlayState());
             #elseif tristan
             FlxG.switchState(new SplashScreenState());
             #elseif jake
