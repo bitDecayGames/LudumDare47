@@ -2,6 +2,7 @@ package states;
 
 import flixel.math.FlxPoint;
 import entities.Player;
+import entities.Ship;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
@@ -13,16 +14,38 @@ class MikeState extends FlxState {
 	public var lightSource:FlxSprite;
 	public var lightMoveSpeed:Float = 8.0;
 	public var player:Player;
+	public var ship0:Ship;
+	public var ship1:Ship;
 
 	override public function create() {
 		super.create();
 
-		player = new Player(0, 0);
-		player.x = FlxG.width / 2.0 - player.width / 2.0;
-		player.y = FlxG.height / 2.0 - player.height / 2.0;
+		var x = 250;
+		var y = 0;
+
+		player = new Player(x, y);
 		add(player);
+		x += 60;
+		y += 150;
+
+		ship0 = new Ship(x, y, 0);
+		add(ship0);
+		x += 30;
+		y += 150;
+
+		ship1 = new Ship(x, y, 1);
+		add(ship1);
 
 		lightSource = new FlxSprite(AssetPaths.lightbulb__png);
+
+		x = -180;
+		y = 0;
+		add(new FlxSprite(x, y, AssetPaths.player_n__png));
+		y += 150;
+		add(new FlxSprite(x, y, AssetPaths.ship0_n__png));
+		y += 150;
+		add(new FlxSprite(x, y, AssetPaths.ship1_n__png));
+
 		add(lightSource);
 
 		FmodManager.PauseSong();
@@ -32,7 +55,10 @@ class MikeState extends FlxState {
 		super.update(elapsed);
 		moveLightbulb();
 
-		player.setLightPosition(lightSource.getPosition());
+		var lightPos = lightSource.getPosition();
+		player.setLightPosition(lightPos);
+		ship0.setLightPosition(lightPos);
+		ship1.setLightPosition(lightPos);
 	}
 
 	private function moveLightbulb() {

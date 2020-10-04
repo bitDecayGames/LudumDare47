@@ -4,11 +4,11 @@ import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
 import flixel.FlxSprite;
 import flixel.math.FlxPoint;
+import shaders.NormalMapShader;
 
 using extensions.FlxObjectExt;
 
 class Ship extends FlxSpriteGroup {
-
 	public var speed:Float = 0;
 	public var startY:Float = 0;
 	public var beat:Int = 0;
@@ -18,29 +18,43 @@ class Ship extends FlxSpriteGroup {
 	public var body:ParentedSprite;
 	public var jets:ParentedSprite;
 
+	var _shader:NormalMapShader;
 	var pulseTarget:Float;
 
-	public function new(x:Float, y:Float) {
+	public function new(x:Float, y:Float, forceShipIndex:Int = -1) {
 		super(x, y);
 
-		var heads = FlxG.random.int(0, 1) == 0;
-		if (heads) {
-			createShip0();
+		if (forceShipIndex < 0) {
+			var heads = FlxG.random.int(0, 1) == 0;
+			if (heads) {
+				createShip0();
+			} else {
+				createShip1();
+			}
 		} else {
-			createShip1();
+			switch (forceShipIndex) {
+				case 0:
+					createShip0();
+				case 1:
+					createShip1();
+				default:
+					createShip0();
+			}
 		}
 
 		newTarget();
 	}
 
 	private function createShip0() {
+		_shader = new NormalMapShader(new FlxSprite(AssetPaths.ship0_n__png));
 		body = new ParentedSprite(this);
 		body.loadGraphic(AssetPaths.ship0__png, true, 90, 135);
 		body.setSize(hitbox.x, hitbox.y);
 		body.offset.set(5, body.height - hitbox.y + 35);
-		this.setMidpoint(x - body.width/2, y);
+		this.setMidpoint(x - body.width / 2, y);
 		body.animation.add("idle", [0]);
 		body.animation.play("idle");
+		body.shader = _shader;
 		add(body);
 
 		jets = new ParentedSprite(this);
@@ -54,13 +68,15 @@ class Ship extends FlxSpriteGroup {
 	}
 
 	private function createShip1() {
+		_shader = new NormalMapShader(new FlxSprite(AssetPaths.ship1_n__png));
 		body = new ParentedSprite(this);
 		body.loadGraphic(AssetPaths.ship1__png, true, 90, 135);
 		body.setSize(hitbox.x, hitbox.y);
 		body.offset.set(5, body.height - hitbox.y + 35);
-		this.setMidpoint(x - body.width/2, y);
+		this.setMidpoint(x - body.width / 2, y);
 		body.animation.add("idle", [0]);
 		body.animation.play("idle");
+		body.shader = _shader;
 		add(body);
 
 		jets = new ParentedSprite(this);
@@ -89,5 +105,9 @@ class Ship extends FlxSpriteGroup {
 				newTarget();
 			}
 		}
+	}
+
+	public function setLightPosition(lightPos:FlxPoint) {
+		_shader.setLightPosition(new FlxPoint((lightPos.x - body.x) / (body.frameWidth * 3), (lightPos.y - body.y) / body.frameHeight));
 	}
 }

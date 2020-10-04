@@ -23,7 +23,7 @@ class NormalMapShader extends FlxShader {
 			normal = normalize(normal * 2.0 - 1.0);
 
 			float cos_angle = dot(normal, toLight);
-  			cos_angle = clamp(cos_angle, 0.0, 1.0);
+  			cos_angle = clamp(cos_angle, 0.2, 1.0);
 
 			gl_FragColor = vec4(vec3(source) * cos_angle, source.a);
 
@@ -45,7 +45,7 @@ class NormalMapShader extends FlxShader {
 		super();
 		setNormalMapSprite(spr);
 		setLightPosition(new FlxPoint(0, 0));
-		setLightHeight(0.5);
+		setLightHeight(1);
 	}
 
 	public function setNormalMapSprite(spr:FlxSprite) {
