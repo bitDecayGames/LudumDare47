@@ -110,4 +110,8 @@ class Ship extends FlxSpriteGroup {
 	public function setLightPosition(lightPos:FlxPoint) {
 		_shader.setLightPosition(new FlxPoint((lightPos.x - body.x) / (body.frameWidth * 3), (lightPos.y - body.y) / body.frameHeight));
 	}
+
+	public function setAmbientRatio(ratio:Float) {
+		_shader.setAmbientRatio(ratio);
+	}
 }
