@@ -1,5 +1,7 @@
 package states;
 
+import flixel.text.FlxText;
+import com.bitdecay.textpop.TextPop;
 import flixel.tweens.motion.LinearMotion;
 import flixel.tweens.misc.VarTween;
 import haxe.Timer;
@@ -33,6 +35,9 @@ class JakeState extends FlxState {
 	var pixPerBeat = 100;
 	var screenBeatSpaces = (FlxG.height / 100);
 	var focusBeat = 5; // this is the beat where things align on screen (the one right in front of the player)
+
+	var comboText:FlxText;
+	var comboCounter:Int = 0;
 
 	var lastTick:Float = 0.0;
 	var tickDiff:Float = 0.0;
@@ -82,6 +87,9 @@ class JakeState extends FlxState {
 	override public function create()
 	{
 		super.create();
+
+		comboText = new FlxText(10, FlxG.height-45, 100, "0", 30);
+		add(comboText);
 
 		timePerBeat = 60.0/bpm;
 		halfTime = timePerBeat/2;
@@ -259,6 +267,8 @@ class JakeState extends FlxState {
 	private function handlePlayerCarOverlap(player: Ship, ai: Ship) {
 		beaters.remove(ai);
 		ai.kill();
+		resetCombo();
+		TextPop.pop(Std.int(player.x), Std.int(player.y), "Collision", null, 25);
 	}
 
 	override public function update(elapsed:Float) {
@@ -281,6 +291,7 @@ class JakeState extends FlxState {
 		}
 
 		FlxG.overlap(playerGroup, beaters, handlePlayerCarOverlap);
+		comboText.text = Std.string(comboCounter);
 	}
 
 	private function calculateBeatScore(ts:Float) {
@@ -293,12 +304,22 @@ class JakeState extends FlxState {
 		trace("Diff: " + diff);
 
 		if (diff < timePerBeat / 4) {
+			TextPop.pop(Std.int(player.x), Std.int(player.y), "Great!", null, 25);
+			comboCounter++;
 			player.color = FlxColor.BLUE;
 		} else if (diff < timePerBeat / 3) {
+			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", null, 25);
+			resetCombo();
 			player.color = FlxColor.YELLOW;
 		} else {
+			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", null, 25);
+			resetCombo();
 			player.color = FlxColor.RED;
 		}
+	}
+
+	private function resetCombo() {
+		comboCounter = 0;
 	}
 
 	override public function onFocusLost():Void {
