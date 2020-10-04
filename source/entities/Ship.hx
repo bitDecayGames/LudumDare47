@@ -1,5 +1,6 @@
 package entities;
 
+import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
 import flixel.FlxSprite;
 import flixel.math.FlxPoint;
@@ -16,6 +17,8 @@ class Ship extends FlxSpriteGroup {
 
 	var body:ParentedSprite;
 	var jets:ParentedSprite;
+
+	var pulseTarget:Float;
 
 	public function new(x:Float, y:Float) {
 		super(x, y);
@@ -36,9 +39,25 @@ class Ship extends FlxSpriteGroup {
 		jets.animation.add("idle", [0]);
 		jets.animation.play("idle");
 		add(jets);
+
+		newTarget();
+	}
+
+	private function newTarget() {
+		pulseTarget = FlxG.random.float(0.9, 1.1);
 	}
 
 	override public function update(delta:Float) {
 		super.update(delta);
+
+		if (scale.x != pulseTarget) {
+			var diff = pulseTarget - scale.x;
+			var change = (diff / 2) * delta;
+			scale.add(change, change);
+
+			if (Math.abs(scale.x - pulseTarget) < 0.05) {
+				newTarget();
+			}
+		}
 	}
 }
