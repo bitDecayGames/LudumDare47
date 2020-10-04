@@ -6,19 +6,22 @@ import flixel.addons.editors.ogmo.FlxOgmo3Loader;
 import flixel.tile.FlxTilemap;
 
 class Level {
-    public var bpm: Float = 0.0;
+	public var bpm: Float = 0.0;
+
 	public var beatEvents:Array<BeatEvent> = [];
 	public var walls:FlxTilemap;
 	public var background:FlxTilemap;
 
-	public static function createFromOgmoFile(ogmoFile:String, levelFile:String): Level {
+	public static function createFromOgmoFile(ogmoFile:String, levelFile:String, bpm: Float): Level {
 		var map = new FlxOgmo3Loader(ogmoFile, levelFile);
-		var level = new Level();
+		var level = new Level(bpm);
 		level.load(map);
 		return level;
 	}
 
-	public function new() {}
+	public function new(bpm: Float) {
+		this.bpm = bpm;
+	}
 
     public function initDefaultBeatEvents(laneCoords: Array<Float>) {
 		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[0], 0)));

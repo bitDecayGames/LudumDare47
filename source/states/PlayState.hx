@@ -42,7 +42,7 @@ using extensions.FlxObjectExt;
 class PlayState extends FlxState {
 
 	// TODO: These wil likely live somewhere else ultimately
-	var bpm = 130.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
+	var defaultBpm = 130.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
 	var pixPerBeat = 100;
 	var screenBeatSpaces = (FlxG.height / 100);
 	var focusBeat = 5; // this is the beat where things align on screen (the one right in front of the player)
@@ -106,10 +106,14 @@ class PlayState extends FlxState {
 	{
 		super.create();
 
+		level = new Level(defaultBpm);
+		level.initDefaultBeatEvents(laneCoords);
+		parse(level.beatEvents);
+
 		comboText = new FlxText(10, FlxG.height-45, 100, "0", 30);
 		add(comboText);
 
-		timePerBeat = 60.0/bpm;
+		timePerBeat = 60.0/level.bpm;
 		halfTime = timePerBeat/2;
 		trace("timePerBeat: " + timePerBeat);
 		trace("halfTime: " + halfTime);
@@ -146,10 +150,6 @@ class PlayState extends FlxState {
 			y += pixPerBeat;
 		}
 		#end
-
-		level = new Level();
-		level.initDefaultBeatEvents(laneCoords);
-		parse(level.beatEvents);
 
 		add(beaters);
 
@@ -226,7 +226,7 @@ class PlayState extends FlxState {
 				ship.y,
 				ship.x,
 				ship.startY + ship.beat * (ship.speed * pixPerBeat),
-				60.0 / bpm)
+				60.0 / level.bpm)
 			);
 		}
 
