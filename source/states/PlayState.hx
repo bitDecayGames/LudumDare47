@@ -119,6 +119,8 @@ class PlayState extends FlxState {
 		var noiseBitmap = new FlxSprite(0,0, "assets/images/NoiseTexture.png");
 		shaderInput.input = noiseBitmap.pixels.clone();
 		
+		camera.setFilters(filters);
+
 		shader = new Vhs();
 		shader.iTime.value = [0];
 		shader.noiseTexture = shaderInput;
@@ -222,19 +224,16 @@ class PlayState extends FlxState {
 		}
 	}
 
-	private function updateFilters(){
-		camera.setFilters(filters);
-	}
-
 	private function beat() {
 		beatSpeaker.handleBeat();
 		beatTime = Date.now().getTime();
 		beatAwaitingProcessing = true;
 
 		FlxG.camera.shake(0.005, 0.05);
-		camera.setFilters([blurFilter]);
-		filters.remove(blurFilter);
-		Timer.delay(()->{updateFilters();}, 100);
+		filters.push(blurFilter);
+		Timer.delay(()->{
+			filters.remove(blurFilter);
+		}, 100);
 
 		currentBeat++;
 
@@ -317,7 +316,6 @@ class PlayState extends FlxState {
 				} else {
 					filters.remove(vhsFilter);
 				}
-				updateFilters();
 		}
 
 		if (playerTween == null || playerTween.finished) {
