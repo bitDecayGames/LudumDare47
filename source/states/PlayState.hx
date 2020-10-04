@@ -123,7 +123,7 @@ class PlayState extends FlxState {
 		var shaderInput = new ShaderInput<BitmapData>();
 		var noiseBitmap = new FlxSprite(0,0, "assets/images/NoiseTexture.png");
 		shaderInput.input = noiseBitmap.pixels.clone();
-		
+
 		camera.setFilters(filters);
 
 		shader = new Vhs();
@@ -170,7 +170,7 @@ class PlayState extends FlxState {
 			// floor this so we make sure to render sooner rather than later
 			var beginRenderBeat = Math.floor(1.0 * e.impactBeat - (focusBeat / e.speed));
 
-			trace(e, " starting at ", beginRenderBeat);
+			// trace(e, " starting at ", beginRenderBeat);
 
 			// the impact y-coord  minus   how many beats on screen   times  how fast our ship moves
 			e.sprite.y = (focusBeat * level.pixelsPerBeat) - (e.impactBeat - beginRenderBeat) * level.pixelsPerBeat * e.speed;
@@ -208,7 +208,7 @@ class PlayState extends FlxState {
 
 		if (renderEvents.exists(currentBeat)) {
 			for (e in renderEvents[currentBeat]) {
-				trace("adding {} on beat {}", e, currentBeat);
+				// trace("adding {} on beat {}", e, currentBeat);
 				beaters.add(e.sprite);
 				add(e.sprite);
 				e.sprite.speed = e.speed;
@@ -299,12 +299,12 @@ class PlayState extends FlxState {
 
 	private function calculateBeatScore(ts:Float) {
 		var diff = Math.abs(ts - beatTime) / 1000;
-		trace("RawDiff: " + diff);
+		// trace("RawDiff: " + diff);
 		if (diff > halfTime) {
 			diff = Math.abs(diff - timePerBeat);
 		}
 
-		trace("Diff: " + diff);
+		// trace("Diff: " + diff);
 
 		if (diff < timePerBeat / 4) {
 			TextPop.pop(Std.int(player.x), Std.int(player.y), "Great!", new FlyBack(-300, 1), 25);
