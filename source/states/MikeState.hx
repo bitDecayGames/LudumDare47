@@ -24,16 +24,19 @@ class MikeState extends FlxState {
 		var y = 0;
 
 		player = new Player(x, y);
+		player.setAmbientRatio(0.2);
 		add(player);
 		x += 60;
 		y += 150;
 
 		ship0 = new Ship(x, y, 0);
+		ship0.setAmbientRatio(0.2);
 		add(ship0);
 		x += 30;
 		y += 150;
 
 		ship1 = new Ship(x, y, 1);
+		ship1.setAmbientRatio(0.2);
 		add(ship1);
 
 		lightSource = new FlxSprite(AssetPaths.lightbulb__png);

@@ -68,4 +68,8 @@ class Player extends FlxSpriteGroup {
 	public function setLightPosition(lightPos:FlxPoint) {
 		_shader.setLightPosition(new FlxPoint((lightPos.x - ship.x) / (ship.frameWidth * 3), (lightPos.y - ship.y) / ship.frameHeight));
 	}
+
+	public function setAmbientRatio(ratio:Float) {
+		_shader.setAmbientRatio(ratio);
+	}
 }
