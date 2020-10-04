@@ -8,20 +8,15 @@ import flixel.FlxState;
 
 class Level {
 	public var bpm: Float = 0.0;
+	public var pixelsPerBeat: Int = 0;
 
 	public var beatEvents:Array<BeatEvent> = [];
 	public var walls:FlxTilemap;
 	public var background:FlxTilemap;
 
-	public static function createFromOgmoFile(ogmoFile:String, levelFile:String, bpm: Float): Level {
-		var map = new FlxOgmo3Loader(ogmoFile, levelFile);
-		var level = new Level(bpm);
-		level.load(map);
-		return level;
-	}
-
-	public function new(bpm: Float) {
+	public function new(bpm: Float, pixelsPerBeat: Int) {
 		this.bpm = bpm;
+		this.pixelsPerBeat = pixelsPerBeat;
 	}
 
     public function initDefaultBeatEvents(laneCoords: Array<Float>) {
@@ -71,7 +66,9 @@ class Level {
 		// state.add(walls);
 	}
 	
-	private function load(map: FlxOgmo3Loader) {
+	public function loadOgmoMap(ogmoFile:String, levelFile:String, bpm: Float) {
+		var map = new FlxOgmo3Loader(ogmoFile, levelFile);
+
 		// background = map.loadTilemap(AssetPaths.cityTiles__png, "Ground");
 		// walls = map.loadTilemap(AssetPaths.collisions__png, "Walls");
 		// FlxG.worldBounds.set(0, 0, walls.width, walls.height);
@@ -80,26 +77,16 @@ class Level {
 		// groundType.setTileProperties(2, FlxObject.ANY, setPlayerGroundType("grass"));
 		// groundType.setTileProperties(3, FlxObject.ANY, setPlayerGroundType("metal"));
 
-		// map.loadEntities(function loadEntity(entity:EntityData) {
-		// 	switch (entity.name) {
-		// 		case "PlayerSpawn":
-		// 			player = new Player(entity.x, entity.y);
-		// 			return;
-		// 		case "Checkpoint":
-		// 			var checkpoint = checkpointManager.createCheckpoint();
-		// 			checkpoint.x = entity.x;
-		// 			checkpoint.y = entity.y;
-		// 			triggers.add(checkpoint);
-		// 			return;
-		// 		case "Objective":
-		// 			var objective = objectiveManager.createObjective(entity.values.description, entity.values.index);
-		// 			objective.x = entity.x;
-		// 			objective.y = entity.y;
-		// 			triggers.add(objective);
-		// 			return;
-		// 		default:
-		// 			throw 'Unrecognized actor type ${entity.name}';
-		// 	}
-		// }, "Entities");
+		map.loadEntities(function loadEntity(entity:EntityData) {
+			switch (entity.name) {
+				case "Ship":
+					var beat = Std.int(entity.y / pixelsPerBeat);
+					var speed = 1; // TODO Will this be on entity metadata?
+					beatEvents.push(new BeatEvent(beat, speed, new Ship(entity.x, 0)));
+					return;
+				default:
+					throw 'Unrecognized entity name: ${entity.name}';
+			}
+		}, "Entities");
 	}
 }

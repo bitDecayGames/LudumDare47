@@ -43,7 +43,8 @@ class PlayState extends FlxState {
 
 	// TODO: These wil likely live somewhere else ultimately
 	var defaultBpm = 130.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
-	var pixPerBeat = 100;
+	var defaultPixPerBeat = 100;
+
 	var screenBeatSpaces = (FlxG.height / 100);
 	var focusBeat = 5; // this is the beat where things align on screen (the one right in front of the player)
 
@@ -99,17 +100,20 @@ class PlayState extends FlxState {
 
 	var beatSpeaker:BeatSpeaker;
 
-	var ground: Ground = new Ground();
+	var ground: Ground;
 	var level:Level;
 
 	override public function create()
 	{
 		super.create();
 
-		level = new Level(defaultBpm);
+		level = new Level(defaultBpm, defaultPixPerBeat);
 		level.initDefaultBeatEvents(laneCoords);
 		parse(level.beatEvents);
 		level.addToState(this);
+
+		ground = new Ground();
+		add(ground);
 
 		comboText = new FlxText(10, FlxG.height-45, 100, "0", 30);
 		add(comboText);
@@ -135,22 +139,20 @@ class PlayState extends FlxState {
 		FmodManager.PlaySong(FmodSongs.Level1);
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 
-		add(ground);
-
-		#if !FLX_NO_DEBUG
-		var y = 0;
-		while (y < FlxG.height) {
-			var divider = new FlxSprite(FlxG.width / 2, y, AssetPaths.divider__png);
-			divider.scale.set(FlxG.width / divider.width, 1);
-			add(divider);
-			if (y == focusBeat * pixPerBeat) {
-				divider.alpha = 1;
-			} else {
-				divider.alpha = 0.5;
-			}
-			y += pixPerBeat;
-		}
-		#end
+		// #if !FLX_NO_DEBUG
+		// var y = 0;
+		// while (y < FlxG.height) {
+		// 	var divider = new FlxSprite(FlxG.width / 2, y, AssetPaths.divider__png);
+		// 	divider.scale.set(FlxG.width / divider.width, 1);
+		// 	add(divider);
+		// 	if (y == focusBeat * level.pixelsPerBeat) {
+		// 		divider.alpha = 1;
+		// 	} else {
+		// 		divider.alpha = 0.5;
+		// 	}
+		// 	y += level.pixelsPerBeat;
+		// }
+		// #end
 
 		add(beaters);
 
@@ -158,7 +160,7 @@ class PlayState extends FlxState {
 
 		player = new Player(0, 0);
 		player.x = laneCoords[playerLane] - player.width/2;
-		player.y = (focusBeat * pixPerBeat) + 30;
+		player.y = (focusBeat * level.pixelsPerBeat) + 30;
 
 		playerGroup.add(player);
 		add(playerGroup);
@@ -175,7 +177,7 @@ class PlayState extends FlxState {
 			trace(e, " starting at ", beginRenderBeat);
 
 			// the impact y-coord  minus   how many beats on screen   times  how fast our ship moves
-			e.sprite.y = (focusBeat * pixPerBeat) - (e.impactBeat - beginRenderBeat) * pixPerBeat * e.speed;
+			e.sprite.y = (focusBeat * level.pixelsPerBeat) - (e.impactBeat - beginRenderBeat) * level.pixelsPerBeat * e.speed;
 			// we want things to be lined up based on the bottom of the ship
 			e.sprite.y -= e.sprite.body.height;
 			e.sprite.startY = e.sprite.y;
@@ -226,7 +228,7 @@ class PlayState extends FlxState {
 				ship.x,
 				ship.y,
 				ship.x,
-				ship.startY + ship.beat * (ship.speed * pixPerBeat),
+				ship.startY + ship.beat * (ship.speed * level.pixelsPerBeat),
 				60.0 / level.bpm)
 			);
 		}
