@@ -16,6 +16,8 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import level.Ground;
+import entities.BeatSpeaker;
 
 using extensions.FlxObjectExt;
 
@@ -62,14 +64,18 @@ class JakeState extends FlxState {
 		FlxG.width / 2 + 160
 	];
 
-	var debugSpeaker:FlxSprite;
+	var beatSpeaker:BeatSpeaker;
+
+	var ground: Ground = new Ground();
 
 	override public function create()
 	{
 		super.create();
-		FlxG.debugger.visible = true;
+
 		FmodManager.PlaySong(FmodSongs.Song2);
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
+
+		add(ground);
 
 		#if !FLX_NO_DEBUG
 		var y = 0;
@@ -85,12 +91,6 @@ class JakeState extends FlxState {
 			y += pixPerBeat;
 		}
 		#end
-
-		// Debug for testing purposes
-		// for (i in 0...100) {
-		// 	var ship = new Ship(laneCoords[i % 5], 0, false);
-		// 	beatEvents.push(new BeatEvent(i * i, i * 0.1, ship));
-		// }
 
 		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[0], 0, false)));
 		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[1], 0, false)));
@@ -143,11 +143,8 @@ class JakeState extends FlxState {
 		playerGroup.add(player);
 		add(playerGroup);
 
-		debugSpeaker = new FlxSprite(FlxG.width / 2, FlxG.height / 2);
-		debugSpeaker.loadGraphic(AssetPaths.speakerTest__png, true, 80, 80);
-		debugSpeaker.animation.add("sound", [1, 0], 10, false);
-		debugSpeaker.animation.play("sound");
-		add(debugSpeaker);
+		beatSpeaker = new BeatSpeaker();
+		add(beatSpeaker);
 	}
 
 	private function parse(events:Array<BeatEvent>) {
@@ -171,7 +168,7 @@ class JakeState extends FlxState {
 	}
 
 	private function beat() {
-		debugSpeaker.animation.play("sound", true);
+		beatSpeaker.handleBeat();
 		beatTime = Date.now().getTime();
 		beatAwaitingProcessing = true;
 
@@ -207,6 +204,8 @@ class JakeState extends FlxState {
 				60.0 / bpm)
 			);
 		}
+
+		ground.handleBeat();
 	}
 
 	private function checkInput(timestamp:Float):Bool {
