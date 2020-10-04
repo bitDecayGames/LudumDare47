@@ -25,6 +25,7 @@ import flixel.FlxState;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import level.Ground;
 import entities.BeatSpeaker;
+import openfl.filters.BlurFilter;
 
 using extensions.FlxObjectExt;
 
@@ -38,6 +39,8 @@ class JakeState extends FlxState {
 
 	var comboText:FlxText;
 	var comboCounter:Int = 0;
+
+	var blurFilter:BlurFilter = new BlurFilter(4, 0, openfl.filters.BitmapFilterQuality.MEDIUM);
 
 	var lastTick:Float = 0.0;
 	var tickDiff:Float = 0.0;
@@ -206,6 +209,8 @@ class JakeState extends FlxState {
 		beatAwaitingProcessing = true;
 
 		FlxG.camera.shake(0.005, 0.05);
+		camera.setFilters([blurFilter]);
+		Timer.delay(()->{camera.setFilters([]);}, 100);
 
 		currentBeat++;
 
