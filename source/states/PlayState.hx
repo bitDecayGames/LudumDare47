@@ -1,5 +1,6 @@
 package states;
 
+import states.Playstate2.PlayState2;
 import com.bitdecay.analytics.Bitlytics;
 import haxefmod.flixel.FmodFlxUtilities;
 import widgets.BeatTracker;
@@ -46,7 +47,7 @@ using extensions.FlxObjectExt;
 
 class PlayState extends FlxState {
 	// TODO: These wil likely live somewhere else ultimately
-	var defaultBpm = 130.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
+	var defaultBpm = 100.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
 	var defaultPixPerBeat = 100;
 
 	var screenBeatSpaces = (FlxG.height / 100);
@@ -183,8 +184,10 @@ class PlayState extends FlxState {
 		beatSpeaker = new BeatSpeaker();
 		add(beatSpeaker);
 
-		beatTracker = new BeatTracker(this, 135, FlxG.height - 30);
-		FmodManager.PlaySong(FmodSongs.Level1);
+		player.ship.allowCollisions = 0;
+
+		beatTracker = new BeatTracker(this, Std.int(defaultBpm), FlxG.height - 30, 70);
+		FmodManager.PlaySong(FmodSongs.Level0New);
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 	}
 
@@ -335,6 +338,10 @@ class PlayState extends FlxState {
 		super.update(elapsed);
 		var timestamp = Date.now().getTime();
 		FmodManager.Update();
+
+		if (currentBeat >= 10){
+			FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState2());
+		}
 
 		shader.iTime.value[0] += elapsed;
 		if (FlxG.keys.justPressed.N) {
