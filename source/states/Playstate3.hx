@@ -355,6 +355,7 @@ class PlayState3 extends FlxState {
 		}
 
 		if (currentBeat >= 204 || FlxG.keys.justPressed.N) {
+			FmodManager.StopSongImmediately();
 			FmodManager.PlaySong(FmodSongs.Level2New);
 			FmodFlxUtilities.TransitionToState(new CreditsState());
 		}
