@@ -125,7 +125,7 @@ class NormalMapShader extends FlxShader {
 		setNormalMapSprite(spr);
 		setLightPositions([new FlxPoint(0, 0)]);
 		setLightHeight(1);
-		setAmbientRatio(1.0);
+		setAmbientRatio(0.2);
 
 		var ratio = 1.0 * FlxG.width / FlxG.height;
         setAspectRatio(ratio);

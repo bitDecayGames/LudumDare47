@@ -1,5 +1,7 @@
 package states;
 
+import entities.Light;
+import flixel.math.FlxPoint;
 import com.bitdecay.analytics.Bitlytics;
 import haxefmod.flixel.FmodFlxUtilities;
 import widgets.BeatTracker;
@@ -390,6 +392,31 @@ class PlayState extends FlxState {
 		level.update(elapsed);
 		if (level.activeSegment != null) {
 			FlxG.collide(playerGroup, level.activeSegment.getTrack(), handlePlayerWallOverlap);
+		}
+
+
+		var screenCenter = new FlxPoint(FlxG.width / 2, FlxG.height / 2);
+		var lps:Array<FlxPoint> = [];
+		for (p in level.activeSegment.lights) {
+			add(p);
+			if (p.getMidpoint().distanceTo(screenCenter) < FlxG.height + 100) {
+				lps.push(p.getMidpoint());
+			}
+		}
+		for (p in level.queuedSegment.lights) {
+			add(p);
+			if (p.getMidpoint().distanceTo(screenCenter) < FlxG.height + 100) {
+				lps.push(p.getMidpoint());
+			}
+		}
+
+		if (lps.length > 0) {
+			trace("" + lps.length + " lights in range");
+		}
+
+		player.setLightPositions(lps);
+		for (ship in beaters) {
+			ship.setLightPositions(lps);
 		}
 	}
 
