@@ -286,7 +286,6 @@ class PlayState extends FlxState {
 
 		add(shipExplosion);
 		comboCounter = 0;
-		TextPop.pop(Std.int(playerPs.x), Std.int(playerPs.y), "Pink Floyd'd", new FlyBack(-300, 1), 25);
 	}
 
 	private function handlePlayerCarOverlap(playerPs:ParentedSprite, ai:ParentedSprite) {
