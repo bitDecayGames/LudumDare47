@@ -132,7 +132,7 @@ class PlayState extends FlxState {
 		add(comboTitle);
 		comboText = new FlxText(10, FlxG.height-115, 1000, "Current:0", 20);
 		add(comboText);
-		maxComboText = new FlxText(10, FlxG.height-85, 1000, "Max:0", 20);
+		maxComboText = new FlxText(10, FlxG.height-85, 1000, "Best:0", 20);
 		add(maxComboText);
 
 		loadRetryText();
@@ -384,7 +384,7 @@ class PlayState extends FlxState {
 
 		comboText.text = "Current: " + comboCounter;
 		Statics.MaxCombo = Math.max(Statics.MaxCombo, comboCounter);
-		maxComboText.text = "Max: " + Statics.MaxCombo;
+		maxComboText.text = "Best: " + Statics.MaxCombo;
 
 		// Level updates
 		level.update(elapsed);

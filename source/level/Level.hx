@@ -103,6 +103,10 @@ class Level {
 			AssetPaths.segment04__json,
 			AssetPaths.segment05__json,
 			AssetPaths.segment06__json,
+			AssetPaths.segment07__json,
+			AssetPaths.segment08__json,
+			AssetPaths.segment09__json,
+			AssetPaths.segment10__json,
 		];
 		for (s in segments) {
 			var ts = new LevelSegment();
