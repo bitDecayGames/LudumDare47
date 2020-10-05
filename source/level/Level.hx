@@ -41,35 +41,37 @@ class Level {
 		AssetPaths.segment00__json,
 		AssetPaths.segment01__json,
 		AssetPaths.segment02__json,
-		// AssetPaths.segment11__json,
+		AssetPaths.segment11__json,
 	];
 
 	var level2Segments = [
 		AssetPaths.segment00__json,
-		AssetPaths.segment07__json,
+		AssetPaths.segment00__json,
+		AssetPaths.segment05__json,
+		AssetPaths.segment06__json,
 		AssetPaths.segment08__json,
-		AssetPaths.segment09__json,
 		AssetPaths.segment01__json,
+		AssetPaths.segment03__json,
 		AssetPaths.segment02__json,
 		AssetPaths.segment03__json,
 		AssetPaths.segment04__json,
-		AssetPaths.segment05__json,
-		AssetPaths.segment06__json,
-		AssetPaths.segment10__json,
+		AssetPaths.segment08__json,
 	];
 
 	var level3Segments = [
 		AssetPaths.segment00__json,
-		AssetPaths.segment07__json,
+		AssetPaths.segment00__json,
 		AssetPaths.segment08__json,
-		AssetPaths.segment09__json,
-		AssetPaths.segment01__json,
-		AssetPaths.segment02__json,
-		AssetPaths.segment03__json,
-		AssetPaths.segment04__json,
 		AssetPaths.segment05__json,
 		AssetPaths.segment06__json,
-		AssetPaths.segment10__json,
+		AssetPaths.segment09__json,
+		AssetPaths.segment01__json,
+		AssetPaths.segment03__json,
+		AssetPaths.segment11__json,
+		AssetPaths.segment08__json,
+		AssetPaths.segment07__json,
+		AssetPaths.segment05__json,
+		AssetPaths.segment06__json,
 	];
 
 	public function new(bpm:Float, pixelsPerBeat:Int) {
