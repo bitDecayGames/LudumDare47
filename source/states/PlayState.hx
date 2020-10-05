@@ -57,7 +57,11 @@ class PlayState extends FlxState {
 	var isShaderActive:Bool;
 	var shader:Vhs;
 	var vhsFilter:ShaderFilter;
+
+	var allowBeats:Bool = true;
 	
+	var allowSpawning:Bool = true;
+
 	// Failure text
 	var _txtDontGiveUp:FlxText;
     var _txtPressSpace:FlxText;
@@ -192,6 +196,11 @@ class PlayState extends FlxState {
 	}
 
 	private function beat() {
+
+		if (!allowBeats){
+			return;
+		}
+
 		beatSpeaker.handleBeat();
 		beatTime = Date.now().getTime();
 		beatAwaitingProcessing = true;
@@ -261,20 +270,84 @@ class PlayState extends FlxState {
 		if (player.allowCollisions == 0 || ai.allowCollisions == 0) {
 			// ignore this. likely a collision with the jets
 		}
-		beaters.remove(cast(ai.parent, Ship));
+		// beaters.remove(cast(ai.parent, Ship));
 		cast(ai.parent, Ship).kill();
 		FmodManager.PlaySoundOneShot(FmodSFX.Explosion);
-		FmodManager.SetEventParameterOnSong("Silence", 1);
 		disableParentedSprite(player);
 		var shipExplosion:FlxSprite = new FlxSprite();
 		shipExplosion.loadGraphic(AssetPaths.shipExplode__png, true, 160, 980, true);
 		shipExplosion.setPosition(player.x-50, player.y-850);
 		shipExplosion.animation.add("explode", [0,1,2,3,4,5,6,7,8,9,10,11], 12, false);
 		shipExplosion.animation.play("explode");
-		FlxTween.tween(shipExplosion, { x: shipExplosion.x, y: shipExplosion.y+1200}, 1.2);
+		var explosionTween = FlxTween.tween(shipExplosion, { x: shipExplosion.x, y: shipExplosion.y+1800}, 1.8);
+		FmodManager.SetEventParameterOnSong("Silence", 1);
+		explosionTween.onComplete = (t)->{
+			Rewind();
+		};
+
 		add(shipExplosion);
 		resetCombo();
 		TextPop.pop(Std.int(player.x), Std.int(player.y), "Collision", new FlyBack(-300, 1), 25);
+	}
+
+	private function Rewind() {
+
+		Timer.delay(()->{
+			allowBeats = false;
+			FmodManager.StopSong();
+			var fmodRewind = FmodManager.PlaySoundWithReference(FmodSFX.Rewind);
+			level.groundSpeed = 0;
+			// cancel any in-progress tweens
+			for (t in tweens) {
+				if (!t.finished) {
+					t.cancelChain();
+				}
+			}
+			FmodManager.RegisterCallbacksForSound(fmodRewind, ()->{
+				level.rewind = true;
+				level.groundSpeed = currentBeat;
+				isShaderActive = true;
+				filters.push(vhsFilter);
+				tweens.resize(0);
+				// add reverse tweens
+				for (ship in beaters) {
+					tweens.push(FlxTween.linearMotion(
+						ship,
+						ship.x,
+						ship.y,
+						ship.x,
+						ship.y - currentBeat * (ship.speed * level.pixelsPerBeat),
+						60.0 / level.bpm)
+					);
+				}
+
+				
+				FmodManager.RegisterCallbacksForSound(fmodRewind, ()->{
+					level.rewind = false;
+					allowBeats = true;
+					// This should reference the level default in the future
+					level.groundSpeed = 4;
+					isShaderActive = false;
+					filters.remove(vhsFilter);
+					tweens.resize(0);
+					currentBeat = 0;
+					FmodManager.SetEventParameterOnSong("Silence", 0);
+					FmodManager.SetEventParameterOnSong("Miss", 0);
+					FmodManager.PlaySong(FmodSongs.Level1);
+					enableParentedSprite(player.ship);
+					FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
+					for (ship in beaters) {
+						if (!ship.alive){
+							ship.y = -10000;
+							// ship.revive();
+						}
+						ship.beat = 0;
+					}
+					beaters.clear();
+					level.resetTrack();
+				}, FmodCallback.STOPPED);
+			}, FmodCallback.TIMELINE_MARKER);
+		}, 250);
 	}
 
 	override public function update(elapsed:Float) {

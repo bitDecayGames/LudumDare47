@@ -156,6 +156,22 @@ class Level {
 		queueSegmentIfNeeded(rewind);
 	}
 
+	public function resetTrack() {
+		if (activeTrack != null) {
+			activeTrack.kill();
+			activeTrack = null;
+		}
+		
+		if (queuedTrack != null) {
+			queuedTrack.kill();
+			queuedTrack = null;
+		}
+		
+		nextSegmentToLoad = 0;
+		
+		queueSegmentIfNeeded(false);
+	}
+
 	private function queueSegmentIfNeeded(rewind:Bool) {
 
 		if (activeTrack == null) {
