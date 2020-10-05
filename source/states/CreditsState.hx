@@ -26,6 +26,12 @@ class CreditsState extends FlxUIState {
         super.create();
         bgColor = FlxColor.TRANSPARENT;
 
+
+        var bgImage = new FlxSprite(AssetPaths.nebula0__png);
+        bgImage.width = FlxG.width;
+        bgImage.height = FlxG.height;
+        add(bgImage);
+
         // Button
 
         _btnMainMenu = UiHelpers.CreateMenuButton("Main Menu", clickMainMenu);
