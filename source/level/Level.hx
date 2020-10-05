@@ -94,7 +94,7 @@ class Level {
 	}
 
 	public function loadOgmoMap() {
-		var ogmoFile = AssetPaths.segment00__ogmo;
+		var ogmoFile = AssetPaths.test__ogmo;
 		load(ogmoFile, AssetPaths.segment00__json);
 		load(ogmoFile, AssetPaths.segment01__json);
 		load(ogmoFile, AssetPaths.segment02__json);
@@ -116,17 +116,20 @@ class Level {
 		// 	}
 		// }, "Entities");
 
-		queueSegmentIfNeeded(rewind);
+		queueSegmentIfNeeded(rewind);	
 	}
 
 	private function load(ogmoFile:String, levelFile:String) {
 		var map = new FlxOgmo3Loader(ogmoFile, levelFile);
 
-		var track = map.loadTilemap(AssetPaths.tiles__png, "Track");
-		track.setTileProperties(1, FlxObject.ANY);
+		var track = map.loadTilemap(AssetPaths.tiles__png, "track");
+		for (i in 0...128) {
+			// TODO How do we determine which tiles are collidable?
+			track.setTileProperties(i, FlxObject.NONE);
+		}
 		addSegment(track);
 
-		var decoration = map.loadTilemap(AssetPaths.tiles__png, "lanesAndLines");
+		var decoration = map.loadTilemap(AssetPaths.tiles__png, "lines and lanes");
 		addDecoration(decoration);
 	}
 

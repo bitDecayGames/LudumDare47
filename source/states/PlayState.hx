@@ -407,10 +407,11 @@ class PlayState extends FlxState {
 
 		comboText.text = Std.string(comboCounter);
 
+		// Level updates
 		level.update(elapsed);
-		// if (level.activeTrack != null) {
-		// 	FlxG.overlap(playerGroup, level.activeTrack, handlePlayerWallOverlap);
-		// }
+		if (level.activeTrack != null) {
+			FlxG.collide(playerGroup, level.activeTrack, handlePlayerWallOverlap);
+		}
 	}
 
 	private function calculateBeatScore(ts:Float) {
