@@ -134,7 +134,7 @@ class PlayState extends FlxState {
 		add(comboTitle);
 		comboText = new FlxText(10, FlxG.height-115, 1000, "Current:0", 20);
 		add(comboText);
-		maxComboText = new FlxText(10, FlxG.height-85, 1000, "Max:0", 20);
+		maxComboText = new FlxText(10, FlxG.height-85, 1000, "Best:0", 20);
 		add(maxComboText);
 
 		loadRetryText();
@@ -182,8 +182,8 @@ class PlayState extends FlxState {
 		playerGroup.add(player);
 		add(playerGroup);
 
-		beatSpeaker = new BeatSpeaker();
-		add(beatSpeaker);
+		// beatSpeaker = new BeatSpeaker();
+		// add(beatSpeaker);
 
 		beatTracker = new BeatTracker(this, 135, FlxG.height - 30);
 		FmodManager.PlaySong(FmodSongs.Level1);
@@ -220,7 +220,7 @@ class PlayState extends FlxState {
 
 		beatTracker.SpawnLines();
 
-		beatSpeaker.handleBeat();
+		// beatSpeaker.handleBeat();
 		beatTime = Date.now().getTime();
 		beatAwaitingProcessing = true;
 
@@ -290,7 +290,7 @@ class PlayState extends FlxState {
 		comboCounter = 0;
 	}
 
-	private function handlePlayerCarOverlap(playerPs:ParentedSprite, ai:ParentedSprite) {
+	private function handlePlayerShipOverlap(playerPs:ParentedSprite, ai:ParentedSprite) {
 		disableParentedSprite(ai);
 
 		killPlayer(playerPs);
@@ -382,16 +382,17 @@ class PlayState extends FlxState {
 			_txtPressSpace.visible = false;
 		}
 
-		FlxG.overlap(playerGroup, beaters, handlePlayerCarOverlap);
+		FlxG.overlap(playerGroup, beaters, handlePlayerShipOverlap);
 
 		comboText.text = "Current: " + comboCounter;
 		Statics.MaxCombo = Math.max(Statics.MaxCombo, comboCounter);
-		maxComboText.text = "Max: " + Statics.MaxCombo;
+		maxComboText.text = "Best: " + Statics.MaxCombo;
 
 		// Level updates
 		level.update(elapsed);
 		if (level.activeSegment != null) {
-			FlxG.collide(playerGroup, level.activeSegment.getTrack(), handlePlayerWallOverlap);
+			var walls = level.activeSegment.getTrack();
+			FlxG.collide(playerGroup, walls, handlePlayerWallOverlap);
 		}
 
 

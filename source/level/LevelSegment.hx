@@ -69,13 +69,14 @@ class LevelSegment {
 		var magicEntityX = 15;
 		var beatEvents:Array<BeatEvent> = [];
 
+		// trace("seg y", getY(), "height", getHeight());
 		for (entity in shipEntityData) {
-			var beat = Std.int((entity.y / pixelsPerBeat) + currentBeat);
-			// trace("beat event created for beat", beat);
-			beatEvents.push(new BeatEvent(beat, entity.values.speed, new Ship(entity.x - magicEntityX, 0)));
+			var beat = Std.int(((entity.y - getY()) / pixelsPerBeat / 5) + currentBeat);
+			var shipX = entity.x - magicEntityX;
+			// trace("beat event x", shipX, "beat", beat);
+			beatEvents.push(new BeatEvent(beat, entity.values.speed, new Ship(shipX, 0)));
 		}
 
-		// trace(beatEvents.length, "beat events generated on curent beat", currentBeat);
 		return beatEvents;
 	}
 
