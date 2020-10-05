@@ -180,6 +180,9 @@ class PlayState extends FlxState {
 			// floor this so we make sure to render sooner rather than later
 			var beginRenderBeat = Math.floor(1.0 * e.impactBeat - (focusBeat / e.speed));
 
+			// move them one beat earlier so they spawn without their jets hanging in from the top of the screen
+			beginRenderBeat--;
+
 			// trace(e, " starting at ", beginRenderBeat);
 
 			// the impact y-coord  minus   how many beats on screen   times  how fast our ship moves
@@ -223,10 +226,12 @@ class PlayState extends FlxState {
 
 		if (renderEvents.exists(currentBeat)) {
 			for (e in renderEvents[currentBeat]) {
-				// trace("adding {} on beat {}", e, currentBeat);
 				beaters.add(e.sprite);
 				add(e.sprite);
+				e.sprite.y = e.sprite.startY;
+				enableParentedSprite(e.sprite.body);
 				e.sprite.speed = e.speed;
+				e.sprite.beat = 0;
 			}
 		}
 
@@ -271,8 +276,8 @@ class PlayState extends FlxState {
 			// ignore this. likely a collision with the jets
 		}
 		// beaters.remove(cast(ai.parent, Ship));
-		cast(ai.parent, Ship).kill();
 		FmodManager.PlaySoundOneShot(FmodSFX.Explosion);
+		disableParentedSprite(ai);
 		disableParentedSprite(player);
 		var shipExplosion:FlxSprite = new FlxSprite();
 		shipExplosion.loadGraphic(AssetPaths.shipExplode__png, true, 160, 980, true);
@@ -335,13 +340,6 @@ class PlayState extends FlxState {
 					FmodManager.PlaySong(FmodSongs.Level1);
 					enableParentedSprite(player.ship);
 					FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
-					for (ship in beaters) {
-						if (!ship.alive){
-							ship.y = -10000;
-							// ship.revive();
-						}
-						ship.beat = 0;
-					}
 					beaters.clear();
 					level.resetTrack();
 				}, FmodCallback.STOPPED);
@@ -407,20 +405,18 @@ class PlayState extends FlxState {
 
 		comboText.text = Std.string(comboCounter);
 
+		// Level updates
 		level.update(elapsed);
-		// if (level.activeTrack != null) {
-		// 	FlxG.overlap(playerGroup, level.activeTrack, handlePlayerWallOverlap);
-		// }
+		if (level.activeTrack != null) {
+			FlxG.collide(playerGroup, level.activeTrack, handlePlayerWallOverlap);
+		}
 	}
 
 	private function calculateBeatScore(ts:Float) {
 		var diff = Math.abs(ts - beatTime) / 1000;
-		// trace("RawDiff: " + diff);
 		if (diff > halfTime) {
 			diff = Math.abs(diff - timePerBeat);
 		}
-
-		// trace("Diff: " + diff);
 
 		if (diff < timePerBeat / 4) {
 			TextPop.pop(Std.int(player.x), Std.int(player.y), "Great!", new FlyBack(-300, 1), 25);
