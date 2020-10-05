@@ -26,7 +26,6 @@ class Level {
 	public var rewind:Bool = false;
 
 	var currentBeat:Int = 0;
-	var farthestBeat:Int = 0;
 
 	var segmentQueuedCallbacks:Array<Array<BeatEvent>->Void> = [];
 
@@ -116,9 +115,6 @@ class Level {
 
 	public function setBeat(value:Int) {
 		currentBeat = value;
-		if (value > farthestBeat) {
-			farthestBeat = value;
-		}
 	}
 
 	public function update(elapsed:Float) {
@@ -198,11 +194,6 @@ class Level {
 	}
 
 	private function dispatchSegmentQueuedEvent(events:Array<BeatEvent>) {
-		// Do not populate more events if we already have them
-		if (currentBeat > 0 && currentBeat <= farthestBeat) {
-			return;
-		}
-
 		for (fn in segmentQueuedCallbacks) {
 			fn(events);
 		}

@@ -15,7 +15,7 @@ class Configure {
 		if (config == null) {
 			loadConfig();
 		}
-		
+
 		Bitlytics.Init(config.analytics.name, InfluxDB.load(config.analytics.influx, analyticsToken));
 		Bitlytics.Instance().NewSession();
 	}
@@ -24,7 +24,7 @@ class Configure {
 		if (config == null) {
 			loadConfig();
 		}
-		
+
 		var creditSections:Array<CreditEntry> = config.credits.sections;
 		return creditSections;
 	}
