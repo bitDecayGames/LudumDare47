@@ -180,8 +180,8 @@ class PlayState extends FlxState {
 		playerGroup.add(player);
 		add(playerGroup);
 
-		beatSpeaker = new BeatSpeaker();
-		add(beatSpeaker);
+		// beatSpeaker = new BeatSpeaker();
+		// add(beatSpeaker);
 
 		beatTracker = new BeatTracker(this, 135, FlxG.height - 30);
 		FmodManager.PlaySong(FmodSongs.Level1);
@@ -218,7 +218,7 @@ class PlayState extends FlxState {
 
 		beatTracker.SpawnLines();
 
-		beatSpeaker.handleBeat();
+		// beatSpeaker.handleBeat();
 		beatTime = Date.now().getTime();
 		beatAwaitingProcessing = true;
 
