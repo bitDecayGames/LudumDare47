@@ -22,12 +22,14 @@ class CreditsState extends FlxUIState {
     var _txtRole:Array<FlxText>;
     var _txtCreator:Array<FlxText>;
 
+    var scrollSpeed:Float = 100;
+
     override public function create():Void {
         super.create();
         bgColor = FlxColor.TRANSPARENT;
 
 
-        var bgImage = new FlxSprite(AssetPaths.nebula0__png);
+        var bgImage = new FlxSprite(AssetPaths.creditsSplash__png);
         bgImage.width = FlxG.width;
         bgImage.height = FlxG.height;
         add(bgImage);
@@ -144,9 +146,9 @@ class CreditsState extends FlxUIState {
 
         for(element in _allCreditElements) {
             if (FlxG.keys.pressed.SPACE || FlxG.mouse.pressed){
-                element.y -= 2;
+                element.y -= scrollSpeed * 4 * elapsed;
             } else {
-                element.y -= .5;
+                element.y -= scrollSpeed * elapsed;
             }
         }
     }
