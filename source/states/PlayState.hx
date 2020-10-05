@@ -119,7 +119,7 @@ class PlayState extends FlxState {
 		super.create();
 
 		level = new Level(defaultBpm, defaultPixPerBeat);
-		level.initDefaultBeatEvents(laneCoords);
+		// level.initDefaultBeatEvents(laneCoords);
 		parse(level.beatEvents);
 		level.loadOgmoMap();
 		level.addToState(this);
@@ -278,17 +278,11 @@ class PlayState extends FlxState {
 		}
 	}
 
-	private function handlePlayerCarOverlap(player: ParentedSprite, ai: ParentedSprite) {
-		if (player.allowCollisions == 0 || ai.allowCollisions == 0) {
-			// ignore this. likely a collision with the jets
-		}
-		// beaters.remove(cast(ai.parent, Ship));
-		FmodManager.PlaySoundOneShot(FmodSFX.Explosion);
-		disableParentedSprite(ai);
-		disableParentedSprite(player);
+	private function killPlayer(playerPs: ParentedSprite) {
+		disableParentedSprite(playerPs);
 		var shipExplosion:FlxSprite = new FlxSprite();
 		shipExplosion.loadGraphic(AssetPaths.shipExplode__png, true, 160, 980, true);
-		shipExplosion.setPosition(player.x-50, player.y-850);
+		shipExplosion.setPosition(playerPs.x-50, playerPs.y-850);
 		shipExplosion.animation.add("explode", [0,1,2,3,4,5,6,7,8,9,10,11], 12, false);
 		shipExplosion.animation.play("explode");
 		var explosionTween = FlxTween.tween(shipExplosion, { x: shipExplosion.x, y: shipExplosion.y+1800}, 1.8);
@@ -299,7 +293,17 @@ class PlayState extends FlxState {
 
 		add(shipExplosion);
 		resetCombo();
-		TextPop.pop(Std.int(player.x), Std.int(player.y), "Collision", new FlyBack(-300, 1), 25);
+		TextPop.pop(Std.int(playerPs.x), Std.int(playerPs.y), "Pink Floyd'd", new FlyBack(-300, 1), 25);
+	}
+
+	private function handlePlayerCarOverlap(playerPs: ParentedSprite, ai: ParentedSprite) {
+		disableParentedSprite(ai);
+
+		killPlayer(playerPs);
+	}
+
+	private function handlePlayerWallOverlap(playerPs: ParentedSprite, wall: FlxSprite) {
+		killPlayer(playerPs);
 	}
 
 	private function Rewind() {
@@ -352,15 +356,6 @@ class PlayState extends FlxState {
 				}, FmodCallback.STOPPED);
 			}, FmodCallback.TIMELINE_MARKER);
 		}, 250);
-	}
-
-	private function handlePlayerWallOverlap(player: ParentedSprite, wall: FlxSprite) {
-		if (player.allowCollisions == 0 || wall.allowCollisions == 0) {
-			// ignore this. likely a collision with the jets
-		}
-		cast(player.parent, Player).kill();
-		resetCombo();
-		TextPop.pop(Std.int(player.x), Std.int(player.y), "Pink Floyd'd", new FlyBack(-300, 1), 25);
 	}
 
 	override public function update(elapsed:Float) {
