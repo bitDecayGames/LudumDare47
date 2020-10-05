@@ -37,6 +37,14 @@ class Level {
 		background.loadGraphic(AssetPaths.nebula0__png, false, 560, 1260, true);
 	}
 
+	public function addBanners() {
+		dispatchSegmentQueuedEvent([
+			new BeatEvent(6, groundSpeed, new Ship(FlxG.width / 2, 0, 2)),
+			new BeatEvent(7, groundSpeed, new Ship(FlxG.width / 2, 0, 3)),
+			new BeatEvent(8, groundSpeed, new Ship(FlxG.width / 2, 0, 4))
+		]);
+	}
+
 	public function addSegmentQueuedListener(callbackFn:Array<BeatEvent>->Void) {
 		segmentQueuedCallbacks.push(callbackFn);
 	}
@@ -103,6 +111,10 @@ class Level {
 			AssetPaths.segment04__json,
 			AssetPaths.segment05__json,
 			AssetPaths.segment06__json,
+			AssetPaths.segment07__json,
+			AssetPaths.segment08__json,
+			AssetPaths.segment09__json,
+			AssetPaths.segment10__json,
 		];
 		for (s in segments) {
 			var ts = new LevelSegment();

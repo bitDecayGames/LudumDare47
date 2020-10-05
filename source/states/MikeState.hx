@@ -1,5 +1,6 @@
 package states;
 
+import level.LevelSegment;
 import flixel.math.FlxPoint;
 import entities.Player;
 import entities.Ship;
@@ -43,9 +44,9 @@ class MikeState extends FlxState {
 		add(ship1);
 
 		lights = new Array<FlxSprite>();
-		for (i in 0...2) {
-			addLight();
-		}
+		// for (i in 0...2) {
+		// 	addLight();
+		// }
 
 		lightSource = new FlxSprite(AssetPaths.lightbulb__png);
 		lightSource2 = new FlxSprite(AssetPaths.lightbulb__png);
@@ -60,10 +61,30 @@ class MikeState extends FlxState {
 
 		// add(lightSource);
 		add(lightSource2);
+		FlxG.watch.add(lightSource2, "x", "existing x: ");
+		FlxG.watch.add(lightSource2, "y", "existing y: ");
 
 		FmodManager.PauseSong();
 
 		FlxG.watch.addMouse();
+
+		var ts = new LevelSegment();
+		ts.load(AssetPaths.test__ogmo, AssetPaths.segment00__json);
+		var i = 0;
+		for (light in ts.lights) {
+			i++;
+			lights.push(light);
+			add(light);
+			FlxTween.linearMotion(light,
+				light.x,
+				light.y,
+				FlxG.width,
+				light.y,
+				5);
+
+			FlxG.watch.add(light, "x", "loaded " + i + " x: ");
+			FlxG.watch.add(light, "y", "loaded " + i + " y: ");
+		}
 	}
 
 	private function superTween(light:FlxSprite) {
@@ -103,9 +124,12 @@ class MikeState extends FlxState {
 		// ship0.setLightPosition(lightPos);
 		// ship1.setLightPosition(lightPos);
 
+		var middle = new FlxPoint(FlxG.width / 2, FlxG.height / 2);
 		var arr = [for (l in lights) {
-			if (l.visible) {
-				l.getMidpoint();
+			if (l.getMidpoint().distanceTo(middle) < FlxG.height + 100) {
+				if (l.visible) {
+					l.getMidpoint();
+				}
 			}
 		}];
 		arr.insert(0, lightSource2.getMidpoint());

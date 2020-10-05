@@ -26,13 +26,13 @@ class BeatTracker {
     var _scale:FlxPoint;
     var _beatIndicatorSpeed:Float;
 
-    public function new(parentState:FlxState, bpm:Int, verticalPositionOnScreen:Int) {
+    public function new(parentState:FlxState, bpm:Int, verticalPositionOnScreen:Int, successZoneWidth:Int) {
         this.parentState = parentState;
         this.bpm = bpm;
         this.verticalPositionOnScreen = verticalPositionOnScreen;
 
         _successZone = new FlxSprite();
-        _successZone.makeGraphic(70, 20, FlxColor.GREEN);
+        _successZone.makeGraphic(successZoneWidth, 20, FlxColor.GREEN);
         _successZone.alpha = 0.5;
         _successZone.setPosition(FlxG.width/2 - _successZone.width/2, verticalPositionOnScreen - _successZone.height/2);
         parentState.add(_successZone);

@@ -37,6 +37,12 @@ class Ship extends FlxSpriteGroup {
 					createShip0();
 				case 1:
 					createShip1();
+				case 2:
+					createBanner(AssetPaths.ready__png);
+				case 3:
+					createBanner(AssetPaths.set__png);
+				case 4:
+					createBanner(AssetPaths.go__png);
 				default:
 					createShip0();
 			}
@@ -89,6 +95,15 @@ class Ship extends FlxSpriteGroup {
 		add(jets);
 	}
 
+	private function createBanner(asset:String) {
+		body = new ParentedSprite(this);
+		body.loadGraphic(asset, false);
+		this.setMidpoint(x - body.width / 2, y);
+		body.allowCollisions = 0;
+		body.skipResets = true;
+		add(body);
+	}
+
 	private function newTarget() {
 		pulseTarget = FlxG.random.float(0.9, 1.1);
 	}
@@ -108,9 +123,11 @@ class Ship extends FlxSpriteGroup {
 	}
 
 	public function setLightPositions(lights:Array<FlxPoint>) {
-		_shader.setLightPositions([for (p in lights) {
-			adjustPoint(p);
-		}]);
+		if (_shader != null) {
+			_shader.setLightPositions([for (p in lights) {
+				adjustPoint(p);
+			}]);
+		}
 	}
 
 	private var refPoint = FlxPoint.get();

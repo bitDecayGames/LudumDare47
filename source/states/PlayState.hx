@@ -1,5 +1,8 @@
 package states;
 
+import states.Playstate2.PlayState2;
+import entities.Light;
+import flixel.math.FlxPoint;
 import com.bitdecay.analytics.Bitlytics;
 import haxefmod.flixel.FmodFlxUtilities;
 import widgets.BeatTracker;
@@ -46,7 +49,7 @@ using extensions.FlxObjectExt;
 
 class PlayState extends FlxState {
 	// TODO: These wil likely live somewhere else ultimately
-	var defaultBpm = 130.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
+	var defaultBpm = 100.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
 	var defaultPixPerBeat = 100;
 
 	var screenBeatSpaces = (FlxG.height / 100);
@@ -128,11 +131,13 @@ class PlayState extends FlxState {
 		level.loadOgmoMap();
 		level.addToState(this);
 
+		level.addBanners();
+
 		comboTitle = new FlxText(10, FlxG.height-150, 1000, "Combo", 25);
 		add(comboTitle);
 		comboText = new FlxText(10, FlxG.height-115, 1000, "Current:0", 20);
 		add(comboText);
-		maxComboText = new FlxText(10, FlxG.height-85, 1000, "Max:0", 20);
+		maxComboText = new FlxText(10, FlxG.height-85, 1000, "Best:0", 20);
 		add(maxComboText);
 
 		loadRetryText();
@@ -180,11 +185,11 @@ class PlayState extends FlxState {
 		playerGroup.add(player);
 		add(playerGroup);
 
-		beatSpeaker = new BeatSpeaker();
-		add(beatSpeaker);
+		// beatSpeaker = new BeatSpeaker();
+		// add(beatSpeaker);
 
-		beatTracker = new BeatTracker(this, 135, FlxG.height - 30);
-		FmodManager.PlaySong(FmodSongs.Level1);
+		beatTracker = new BeatTracker(this, Std.int(defaultBpm), FlxG.height - 30, 70);
+		FmodManager.PlaySong(FmodSongs.Level0New);
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 	}
 
@@ -218,7 +223,7 @@ class PlayState extends FlxState {
 
 		beatTracker.SpawnLines();
 
-		beatSpeaker.handleBeat();
+		// beatSpeaker.handleBeat();
 		beatTime = Date.now().getTime();
 		beatAwaitingProcessing = true;
 
@@ -289,6 +294,10 @@ class PlayState extends FlxState {
 	}
 
 	private function handlePlayerShipOverlap(playerPs:ParentedSprite, ai:ParentedSprite) {
+		if (ai.allowCollisions == 0) {
+			return;
+		}
+
 		disableParentedSprite(ai);
 
 		killPlayer(playerPs);
@@ -335,6 +344,10 @@ class PlayState extends FlxState {
 		super.update(elapsed);
 		var timestamp = Date.now().getTime();
 		FmodManager.Update();
+
+		if (currentBeat >= 135){
+			FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState2());
+		}
 
 		shader.iTime.value[0] += elapsed;
 		if (FlxG.keys.justPressed.N) {
@@ -384,13 +397,38 @@ class PlayState extends FlxState {
 
 		comboText.text = "Current: " + comboCounter;
 		Statics.MaxCombo = Math.max(Statics.MaxCombo, comboCounter);
-		maxComboText.text = "Max: " + Statics.MaxCombo;
+		maxComboText.text = "Best: " + Statics.MaxCombo;
 
 		// Level updates
 		level.update(elapsed);
 		if (level.activeSegment != null) {
 			var walls = level.activeSegment.getTrack();
 			FlxG.collide(playerGroup, walls, handlePlayerWallOverlap);
+		}
+
+
+		var screenCenter = new FlxPoint(FlxG.width / 2, FlxG.height / 2);
+		var lps:Array<FlxPoint> = [];
+		for (p in level.activeSegment.lights) {
+			add(p);
+			if (p.getMidpoint().distanceTo(screenCenter) < FlxG.height + 100) {
+				lps.push(p.getMidpoint());
+			}
+		}
+		for (p in level.queuedSegment.lights) {
+			add(p);
+			if (p.getMidpoint().distanceTo(screenCenter) < FlxG.height + 100) {
+				lps.push(p.getMidpoint());
+			}
+		}
+
+		if (lps.length > 0) {
+			trace("" + lps.length + " lights in range");
+		}
+
+		player.setLightPositions(lps);
+		for (ship in beaters) {
+			ship.setLightPositions(lps);
 		}
 	}
 
@@ -425,7 +463,9 @@ class PlayState extends FlxState {
 		parentedSprite.parent.visible = true;
 		parentedSprite.active = true;
 		parentedSprite.parent.active = true;
-		parentedSprite.allowCollisions = FlxObject.ANY;
+		if (!parentedSprite.skipResets) {
+			parentedSprite.allowCollisions = FlxObject.ANY;
+		}
 	}
 
 	private function loadRetryText() {
