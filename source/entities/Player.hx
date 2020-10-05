@@ -65,10 +65,6 @@ class Player extends FlxSpriteGroup {
 		}
 	}
 
-	public function setLightPosition(lightPos:FlxPoint) {
-		_shader.setLightPosition(lightPos);
-	}
-
 	public function setLightPositions(lights:Array<FlxPoint>) {
 		_shader.setLightPositions([for (p in lights) {
 			adjustPoint(p);

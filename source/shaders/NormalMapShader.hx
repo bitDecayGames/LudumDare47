@@ -49,7 +49,7 @@ class NormalMapShader extends FlxShader {
 		{
 			vec3 litColor = vec3(0.,0.,0.);
 			if (numLights > 0.0) {
-				litColor += getLight(lightPos);
+				litColor += getLight(lightPos1);
 			}
 			if (numLights > 1.0) {
 				litColor += getLight(lightPos2);
@@ -76,7 +76,7 @@ class NormalMapShader extends FlxShader {
 				litColor += getLight(lightPos9);
 			}
 			if (numLights > 9.0) {
-				litColor += getLight(lightPos10);
+				litColor += getLight(lightPos0);
 			}
 
 			litColor /= numLights;
@@ -88,7 +88,7 @@ class NormalMapShader extends FlxShader {
 	public function new(spr:FlxSprite) {
 		super();
 		setNormalMapSprite(spr);
-		setLightPosition(new FlxPoint(0, 0));
+		setLightPositions([new FlxPoint(0, 0)]);
 		setLightHeight(1);
 		setAmbientRatio(1.0);
 	}
@@ -99,11 +99,6 @@ class NormalMapShader extends FlxShader {
 	}
 
 	// for this to work properly, you will need to convert your light position into local coordinates to the sprite, then into a ratio between 0-1 based on the sprite's total width (if it is a sprite sheet, you will need to take frameWidth * numOfFrames)
-	public function setLightPosition(pos:FlxPoint) {
-		lightPos.value = [pos.x, pos.y];
-		numLights.value = [2.0];
-	}
-
 	public function setLightPositions(positions:Array<FlxPoint>) {
 		if (positions.length > 0) {
 			lightPos0.value = [positions[0].x, positions[0].y];
