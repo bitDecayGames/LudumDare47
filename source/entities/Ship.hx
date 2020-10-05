@@ -62,7 +62,7 @@ class Ship extends FlxSpriteGroup {
 		jets.setPosition(17, 122 - 35);
 		jets.allowCollisions = 0;
 
-		jets.animation.add("idle", [0]);
+		jets.animation.add("idle", [for(i in 0...11) i]);
 		jets.animation.play("idle");
 		add(jets);
 	}
@@ -84,7 +84,7 @@ class Ship extends FlxSpriteGroup {
 		jets.setPosition(14, 96);
 		jets.allowCollisions = 0;
 
-		jets.animation.add("idle", [0]);
+		jets.animation.add("idle", [for(i in 0...11) i]);
 		jets.animation.play("idle");
 		add(jets);
 	}
