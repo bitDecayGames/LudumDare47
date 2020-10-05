@@ -81,43 +81,41 @@ class NormalMapShader extends FlxShader {
 		{
 			vec4 litColor = vec4(0.,0.,0.,0.);
 			if (numLights > 0.0) {
-				litColor += getLight(lightPos0);
+				litColor = max(litColor, getLight(lightPos0));
 			}
 			if (numLights > 1.0) {
-				litColor += getLight(lightPos1);
+				litColor = max(litColor, getLight(lightPos1));
 			}
 			if (numLights > 2.0) {
-				litColor += getLight(lightPos2);
+				litColor = max(litColor, getLight(lightPos2));
 			}
 			if (numLights > 3.0) {
-				litColor += getLight(lightPos3);
+				litColor = max(litColor, getLight(lightPos3));
 			}
 			if (numLights > 4.0) {
-				litColor += getLight(lightPos4);
+				litColor = max(litColor, getLight(lightPos4));
 			}
 			if (numLights > 5.0) {
-				litColor += getLight(lightPos5);
+				litColor = max(litColor, getLight(lightPos5));
 			}
 			if (numLights > 6.0) {
-				litColor += getLight(lightPos6);
+				litColor = max(litColor, getLight(lightPos6));
 			}
 			if (numLights > 7.0) {
-				litColor += getLight(lightPos7);
+				litColor = max(litColor, getLight(lightPos7));
 			}
 			if (numLights > 8.0) {
-				litColor += getLight(lightPos8);
+				litColor = max(litColor, getLight(lightPos8));
 			}
 			if (numLights > 9.0) {
-				litColor += getLight(lightPos9);
+				litColor = max(litColor, getLight(lightPos9));
 			}
 
 			vec4 source = flixel_texture2D(bitmap, openfl_TextureCoordv);
 
 			if (litColor.a < 1.) {
-				// no lights lit this pixel;
+				// counting lights on the alpha channel. 0 meansno lights lit this pixel;
 				litColor.rgb = source.rgb * ambientRatio;
-			} else {
-				litColor /= litColor.a;
 			}
 
 			gl_FragColor = vec4(litColor.rgb, source.a);
