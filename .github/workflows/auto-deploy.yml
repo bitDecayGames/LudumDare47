@@ -26,6 +26,6 @@ jobs:
         with:
           dir: export/html5.zip
           itchUserName: bitdecaygames
-          itchGameName: ludumdare47-placeholder
+          itchGameName: pulsewave
           itchChannel: web
           butlerApiKey: ${{ secrets.BUTLER_API_KEY }}
