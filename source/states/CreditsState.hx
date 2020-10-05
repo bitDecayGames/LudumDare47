@@ -23,7 +23,7 @@ class CreditsState extends FlxUIState {
     var _txtRole:Array<FlxText>;
     var _txtCreator:Array<FlxText>;
 
-    var scrollSpeed:Float = 100;
+    var scrollSpeed:Float = 66;
 
     override public function create():Void {
         super.create();

@@ -310,7 +310,7 @@ class PlayState2 extends FlxState {
 		Timer.delay(() -> {
 			allowBeats = false;
 			FmodManager.StopSong();
-			var fmodRewind = FmodManager.PlaySoundWithReference(FmodSFX.Rewind);
+			var fmodRewind2 = FmodManager.PlaySoundWithReference(FmodSFX.Rewind);
 			level.groundSpeed = 0;
 			// cancel any in-progress tweens
 			for (t in tweens) {
@@ -318,7 +318,7 @@ class PlayState2 extends FlxState {
 					t.cancelChain();
 				}
 			}
-			FmodManager.RegisterCallbacksForSound(fmodRewind, () -> {
+			FmodManager.RegisterCallbacksForSound(fmodRewind2, () -> {
 				level.rewind = true;
 				level.groundSpeed = currentBeat;
 				isShaderActive = true;
@@ -330,10 +330,10 @@ class PlayState2 extends FlxState {
 						60.0 / level.bpm));
 				}
 
-				FmodManager.RegisterCallbacksForSound(fmodRewind, () -> {
+				FmodManager.RegisterCallbacksForSound(fmodRewind2, () -> {
 					FmodManager.SetEventParameterOnSong("Miss", 0);
 					FmodManager.SetEventParameterOnSong("Silence", 0);
-					FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState2());
+					FmodFlxUtilities.TransitionToState(new PlayState2());
 				}, FmodCallback.STOPPED);
 			}, FmodCallback.TIMELINE_MARKER);
 		}, 250);
