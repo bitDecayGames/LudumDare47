@@ -414,8 +414,8 @@ class PlayState extends FlxState {
 
 		// Level updates
 		level.update(elapsed);
-		if (level.activeTrack != null) {
-			FlxG.collide(playerGroup, level.activeTrack, handlePlayerWallOverlap);
+		if (level.activeSegment != null) {
+			FlxG.collide(playerGroup, level.activeSegment.getTrack(), handlePlayerWallOverlap);
 		}
 	}
 

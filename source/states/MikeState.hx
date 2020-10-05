@@ -12,16 +12,19 @@ import flixel.tweens.FlxTween;
 
 class MikeState extends FlxState {
 	public var lightSource:FlxSprite;
+	public var lightSource2:FlxSprite;
 	public var lightMoveSpeed:Float = 8.0;
 	public var player:Player;
 	public var ship0:Ship;
 	public var ship1:Ship;
 
+	public var lights:Array<FlxSprite>;
+
 	override public function create() {
 		super.create();
 
-		var x = 250;
-		var y = 0;
+		var x = 125;
+		var y = 250;
 
 		player = new Player(x, y);
 		player.setAmbientRatio(0.2);
@@ -39,7 +42,15 @@ class MikeState extends FlxState {
 		ship1.setAmbientRatio(0.2);
 		add(ship1);
 
+		lights = new Array<FlxSprite>();
+		for (i in 0...4) {
+			lights.push(new FlxSprite(AssetPaths.lightbulb__png));
+			superTween(lights[i]);
+			add(lights[i]);
+		}
+
 		lightSource = new FlxSprite(AssetPaths.lightbulb__png);
+		lightSource2 = new FlxSprite(AssetPaths.lightbulb__png);
 
 		x = -180;
 		y = 0;
@@ -50,36 +61,72 @@ class MikeState extends FlxState {
 		add(new FlxSprite(x, y, AssetPaths.ship1_n__png));
 
 		add(lightSource);
+		add(lightSource2);
 
 		FmodManager.PauseSong();
+	}
+
+	private function superTween(light:FlxSprite) {
+		FlxTween.linearMotion(light,
+			light.x,
+			light.y,
+			FlxG.random.float(0, FlxG.width),
+			FlxG.random.float(0, FlxG.height),
+			FlxG.random.float(0.5, 5)).onComplete = (t) -> {
+				// light.visible = FlxG.random.bool();
+				superTween(light);
+			};
 	}
 
 	override public function update(elapsed:Float) {
 		super.update(elapsed);
 		moveLightbulb();
 
-		var lightPos = lightSource.getPosition();
-		player.setLightPosition(lightPos);
-		ship0.setLightPosition(lightPos);
-		ship1.setLightPosition(lightPos);
+		// var lightPos = lightSource.getPosition();
+		// var lightPos2 = lightSource2.getPosition();
+		// player.setLightPosition(lightPos);
+		// ship0.setLightPosition(lightPos);
+		// ship1.setLightPosition(lightPos);
+
+		var arr = [for (l in lights) {
+			if (l.visible) {
+				l.getPosition();
+			}
+		}];
+		player.setLightPositions(arr);
+		ship0.setLightPositions(arr);
+		ship1.setLightPositions(arr);
+
+
 	}
 
 	private function moveLightbulb() {
+		if (FlxG.keys.pressed.UP) {
+			lightSource.y -= lightMoveSpeed;
+		}
+		if (FlxG.keys.pressed.DOWN) {
+			lightSource.y += lightMoveSpeed;
+		}
 		if (FlxG.keys.pressed.LEFT) {
 			lightSource.x -= lightMoveSpeed;
 		}
-
 		if (FlxG.keys.pressed.RIGHT) {
 			lightSource.x += lightMoveSpeed;
 		}
 
-		if (FlxG.keys.pressed.UP) {
-			lightSource.y -= lightMoveSpeed;
+		if (FlxG.keys.pressed.W) {
+			lightSource2.y -= lightMoveSpeed;
+		}
+		if (FlxG.keys.pressed.S) {
+			lightSource2.y += lightMoveSpeed;
+		}
+		if (FlxG.keys.pressed.A) {
+			lightSource2.x -= lightMoveSpeed;
+		}
+		if (FlxG.keys.pressed.D) {
+			lightSource2.x += lightMoveSpeed;
 		}
 
-		if (FlxG.keys.pressed.DOWN) {
-			lightSource.y += lightMoveSpeed;
-		}
 
 		if (FlxG.keys.pressed.ONE) {
 			lightSource.x = 0;
