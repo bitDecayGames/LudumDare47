@@ -48,22 +48,14 @@ class LevelSegment {
 
 		map.loadEntities(function loadEntity(entity:EntityData) {
 			if (entity.name == "light") {
-				trace("loading light at (" + entity.x + ", " + entity.y + ")");
 				var l = new Light(entity.x - 40 + 12, entity.y + 70 - 12);
 				l.levelOffset = l.y;
 				lights.push(l);
-				if (hackBool) {
-					FlxG.watch.add(l, "y", "light y: ");
-					hackBool = false;
-				}
 				return;
 			}
 			throw 'Unrecognized light entity name: ${entity.name}';
 		}, "lights");
-		trace("" + lights.length + " loaded for segment " + levelFile);
 	}
-
-	var hackBool:Bool = true;
 
 	public function generateBeatEvents(currentBeat:Int, pixelsPerBeat:Int):Array<BeatEvent> {
 		var magicEntityX = 15;

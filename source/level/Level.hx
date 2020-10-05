@@ -37,6 +37,14 @@ class Level {
 		background.loadGraphic(AssetPaths.nebula0__png, false, 560, 1260, true);
 	}
 
+	public function addBanners() {
+		dispatchSegmentQueuedEvent([
+			new BeatEvent(6, groundSpeed, new Ship(FlxG.width / 2, 0, 2)),
+			new BeatEvent(7, groundSpeed, new Ship(FlxG.width / 2, 0, 3)),
+			new BeatEvent(8, groundSpeed, new Ship(FlxG.width / 2, 0, 4))
+		]);
+	}
+
 	public function addSegmentQueuedListener(callbackFn:Array<BeatEvent>->Void) {
 		segmentQueuedCallbacks.push(callbackFn);
 	}

@@ -130,6 +130,8 @@ class PlayState extends FlxState {
 		level.loadOgmoMap();
 		level.addToState(this);
 
+		level.addBanners();
+
 		comboTitle = new FlxText(10, FlxG.height-150, 1000, "Combo", 25);
 		add(comboTitle);
 		comboText = new FlxText(10, FlxG.height-115, 1000, "Current:0", 20);
@@ -291,6 +293,10 @@ class PlayState extends FlxState {
 	}
 
 	private function handlePlayerShipOverlap(playerPs:ParentedSprite, ai:ParentedSprite) {
+		if (ai.allowCollisions == 0) {
+			return;
+		}
+
 		disableParentedSprite(ai);
 
 		killPlayer(playerPs);
@@ -452,7 +458,9 @@ class PlayState extends FlxState {
 		parentedSprite.parent.visible = true;
 		parentedSprite.active = true;
 		parentedSprite.parent.active = true;
-		parentedSprite.allowCollisions = FlxObject.ANY;
+		if (!parentedSprite.skipResets) {
+			parentedSprite.allowCollisions = FlxObject.ANY;
+		}
 	}
 
 	private function loadRetryText() {
