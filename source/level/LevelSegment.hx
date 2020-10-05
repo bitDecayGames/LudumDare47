@@ -1,11 +1,14 @@
 package level;
 
+import flixel.FlxG;
+import flixel.math.FlxPoint;
 import flixel.tile.FlxTilemap;
 import flixel.FlxState;
 import flixel.FlxObject;
 import flixel.addons.editors.ogmo.FlxOgmo3Loader;
 import events.BeatEvent;
 import entities.Ship;
+import entities.Light;
 
 // Composite Tilemap without needing limtations of a group.
 class LevelSegment {
@@ -14,6 +17,7 @@ class LevelSegment {
 	var track:FlxTilemap;
 	var tileMaps:Array<FlxTilemap> = [];
 	var shipEntityData:Array<EntityData> = [];
+	public var lights:Array<Light> = [];
 
 	public function new() {}
 
@@ -41,19 +45,38 @@ class LevelSegment {
 			}
 			throw 'Unrecognized ships entity name: ${entity.name}';
 		}, "ships");
+
+		map.loadEntities(function loadEntity(entity:EntityData) {
+			if (entity.name == "light") {
+				trace("loading light at (" + entity.x + ", " + entity.y + ")");
+				var l = new Light(entity.x - 40 + 12, entity.y + 70 - 12);
+				l.levelOffset = l.y;
+				lights.push(l);
+				if (hackBool) {
+					FlxG.watch.add(l, "y", "light y: ");
+					hackBool = false;
+				}
+				return;
+			}
+			throw 'Unrecognized light entity name: ${entity.name}';
+		}, "lights");
+		trace("" + lights.length + " loaded for segment " + levelFile);
 	}
+
+	var hackBool:Bool = true;
 
 	public function generateBeatEvents(currentBeat:Int, pixelsPerBeat:Int):Array<BeatEvent> {
 		var magicEntityX = 15;
 		var beatEvents:Array<BeatEvent> = [];
 
+		// trace("seg y", getY(), "height", getHeight());
 		for (entity in shipEntityData) {
-			var beat = Std.int((entity.y / pixelsPerBeat) + currentBeat);
-			// trace("beat event created for beat", beat);
-			beatEvents.push(new BeatEvent(beat, entity.values.speed, new Ship(entity.x - magicEntityX, 0)));
+			var beat = Std.int(((entity.y - getY()) / pixelsPerBeat / 5) + currentBeat);
+			var shipX = entity.x - magicEntityX;
+			// trace("beat event x", shipX, "beat", beat);
+			beatEvents.push(new BeatEvent(beat, entity.values.speed, new Ship(shipX, 0)));
 		}
 
-		// trace(beatEvents.length, "beat events generated on curent beat", currentBeat);
 		return beatEvents;
 	}
 
@@ -84,6 +107,10 @@ class LevelSegment {
 	public function setY(value:Float) {
 		for (tm in tileMaps) {
 			tm.y = value;
+		}
+
+		for (lp in lights) {
+			lp.y = value + lp.levelOffset;
 		}
 	}
 
