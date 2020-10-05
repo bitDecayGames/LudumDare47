@@ -1,5 +1,6 @@
 package states;
 
+import widgets.BeatTracker;
 import flixel.FlxObject;
 import openfl.filters.BitmapFilter;
 import openfl.display.BitmapData;
@@ -52,7 +53,7 @@ class PlayState extends FlxState {
 	var comboCounter:Int = 0;
 
 	var filters:Array<BitmapFilter> = new Array<BitmapFilter>();
-	var blurFilter:BlurFilter = new BlurFilter(4, 0, openfl.filters.BitmapFilterQuality.MEDIUM);
+	var blurFilter:BlurFilter = new BlurFilter(2, 0, openfl.filters.BitmapFilterQuality.HIGH);
 
 	var isShaderActive:Bool;
 	var shader:Vhs;
@@ -61,6 +62,8 @@ class PlayState extends FlxState {
 	var allowBeats:Bool = true;
 
 	var allowSpawning:Bool = true;
+
+	var beatTracker:BeatTracker;
 
 	// Failure text
 	var _txtDontGiveUp:FlxText;
@@ -142,8 +145,6 @@ class PlayState extends FlxState {
 		vhsFilter = new ShaderFilter(shader);
 
 		FlxG.debugger.visible = true;
-		FmodManager.PlaySong(FmodSongs.Level1);
-		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 
 		// #if !FLX_NO_DEBUG
 		// var y = 0;
@@ -173,6 +174,10 @@ class PlayState extends FlxState {
 
 		beatSpeaker = new BeatSpeaker();
 		add(beatSpeaker);
+
+		beatTracker = new BeatTracker(this, 135, FlxG.height - 30);
+		FmodManager.PlaySong(FmodSongs.Level1);
+		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 	}
 
 	private function parse(events:Array<BeatEvent>) {
@@ -204,11 +209,13 @@ class PlayState extends FlxState {
 			return;
 		}
 
+		beatTracker.SpawnLines();
+
 		beatSpeaker.handleBeat();
 		beatTime = Date.now().getTime();
 		beatAwaitingProcessing = true;
 
-		FlxG.camera.shake(0.005, 0.05);
+		FlxG.camera.shake(0.0025, 0.05);
 		filters.push(blurFilter);
 		Timer.delay(()->{
 			filters.remove(blurFilter);
