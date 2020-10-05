@@ -57,7 +57,6 @@ class PlayState extends FlxState {
 
 	var comboTitle:FlxText;
 	var comboText:FlxText;
-	var comboCounter:Int = 0;
 	var maxComboText:FlxText;
 
 	var filters:Array<BitmapFilter> = new Array<BitmapFilter>();
@@ -128,7 +127,7 @@ class PlayState extends FlxState {
 		level = new Level(defaultBpm, defaultPixPerBeat);
 		// level.initTestBeatEvents(laneCoords);
 		level.addSegmentQueuedListener(parseBeatEvents);
-		level.loadOgmoMap();
+		level.loadOgmoMap(1);
 		level.addToState(this);
 		// level.queueEndOfLevel();
 
@@ -291,7 +290,7 @@ class PlayState extends FlxState {
 		};
 
 		add(shipExplosion);
-		comboCounter = 0;
+		Statics.CurrentCombo = 0;
 	}
 
 	private function handlePlayerShipOverlap(playerPs:ParentedSprite, ai:ParentedSprite) {
@@ -346,7 +345,11 @@ class PlayState extends FlxState {
 		var timestamp = Date.now().getTime();
 		FmodManager.Update();
 
-		if (currentBeat >= 135){
+		if (currentBeat == 100) {
+			level.queueEndOfLevel();
+		}
+
+		if (currentBeat >= 134){
 			FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState2());
 		}
 
@@ -396,8 +399,8 @@ class PlayState extends FlxState {
 
 		FlxG.overlap(playerGroup, beaters, handlePlayerShipOverlap);
 
-		comboText.text = "Current: " + comboCounter;
-		Statics.MaxCombo = Math.max(Statics.MaxCombo, comboCounter);
+		comboText.text = "Current: " + Statics.CurrentCombo;
+		Statics.MaxCombo = Math.max(Statics.MaxCombo, Statics.CurrentCombo);
 		maxComboText.text = "Best: " + Statics.MaxCombo;
 
 		// Level updates
@@ -441,7 +444,7 @@ class PlayState extends FlxState {
 
 		if (diff < timePerBeat / 4) {
 			TextPop.pop(Std.int(player.x), Std.int(player.y), "Great!", new FlyBack(-300, 1), 25);
-			comboCounter++;
+			Statics.CurrentCombo++;
 		} else if (diff < timePerBeat / 3) {
 			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", new FlyBack(-300, 1), 25);
 			resetCombo();
@@ -488,7 +491,7 @@ class PlayState extends FlxState {
 	}
 
 	private function resetCombo() {
-		comboCounter = 0;
+		Statics.CurrentCombo = 0;
 		FmodManager.PlaySoundOneShot(FmodSFX.ComboLost);
 		FmodManager.SetEventParameterOnSong("Miss", 1);
 	}
