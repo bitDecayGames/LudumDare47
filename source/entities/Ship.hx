@@ -107,18 +107,19 @@ class Ship extends FlxSpriteGroup {
 		}
 	}
 
-	public function setLightPosition(lightPos:FlxPoint) {
-		_shader.setLightPosition(lightPos);
-	}
-
 	public function setLightPositions(lights:Array<FlxPoint>) {
 		_shader.setLightPositions([for (p in lights) {
 			adjustPoint(p);
 		}]);
 	}
 
+	private var refPoint = FlxPoint.get();
+
 	private function adjustPoint(p:FlxPoint):FlxPoint {
-		return new FlxPoint((p.x - body.x) / (body.frameWidth * 3), (p.y - body.y) / body.frameHeight);
+		refPoint = body.getPosition(refPoint);
+		refPoint.subtractPoint(body.offset);
+		var ret = new FlxPoint((p.x - refPoint.x) / (body.frameWidth * 3), (p.y - refPoint.y) / body.frameHeight);
+		return ret;
 	}
 
 	public function setAmbientRatio(ratio:Float) {

@@ -65,18 +65,20 @@ class Player extends FlxSpriteGroup {
 		}
 	}
 
-	public function setLightPosition(lightPos:FlxPoint) {
-		_shader.setLightPosition(lightPos);
-	}
-
 	public function setLightPositions(lights:Array<FlxPoint>) {
 		_shader.setLightPositions([for (p in lights) {
 			adjustPoint(p);
 		}]);
 	}
 
+	private var refPoint = FlxPoint.get();
+
 	private function adjustPoint(p:FlxPoint):FlxPoint {
-		return new FlxPoint((p.x - ship.x) / (ship.frameWidth * 3), (p.y - ship.y) / ship.frameHeight);
+		refPoint = ship.getPosition(refPoint);
+		refPoint.subtractPoint(ship.offset);
+		// multiply frame width here by 3 because this coordinate is relative  to the full loaded bitmap image
+		var ret = new FlxPoint((p.x - refPoint.x) / (ship.frameWidth * 3), (p.y - refPoint.y) / ship.frameHeight);
+		return ret;
 	}
 
 	public function setAmbientRatio(ratio:Float) {

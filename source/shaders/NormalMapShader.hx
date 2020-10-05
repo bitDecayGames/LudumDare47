@@ -1,5 +1,6 @@
 package shaders;
 
+import flixel.FlxG;
 import flixel.system.FlxAssets.FlxShader;
 import flixel.FlxSprite;
 import flixel.math.FlxPoint;
@@ -8,7 +9,7 @@ class NormalMapShader extends FlxShader {
 	@:glFragmentSource('
 		#pragma header
 		uniform sampler2D normalTex;
-		uniform vec2 lightPos;
+		uniform vec2 lightPos1;
 		uniform vec2 lightPos2;
 		uniform vec2 lightPos3;
 		uniform vec2 lightPos4;
@@ -17,80 +18,117 @@ class NormalMapShader extends FlxShader {
 		uniform vec2 lightPos7;
 		uniform vec2 lightPos8;
 		uniform vec2 lightPos9;
-		uniform vec2 lightPos10;
+		uniform vec2 lightPos0;
 		uniform float numLights;
 		uniform float lightHeight;
 		uniform float ambientRatio;
+		uniform float aspectRatio;
 
-		vec3 getLight(vec2 lPos) {
+		vec4 getLight(vec2 lPos) {
+			// pull out the color vectors from the source image and the normal image
+			vec4 source = flixel_texture2D(bitmap, openfl_TextureCoordv);
+			vec4 normal = texture2D(normalTex, openfl_TextureCoordv);
+
+			vec2 distance = lPos - openfl_TextureCoordv;
+			distance *= vec2(1, aspectRatio);
+
+			if (length(distance) > 1.0) {
+				return vec4(0., 0., 0., 0.);
+			}
+
             // calculate the vector going from the texture coord to the light source and add some height to this vector
 			vec4 toLight = vec4(lPos - openfl_TextureCoordv, lightHeight, 0);
 
 			// invert the y value since uv coords have reversed coordinate system
 			toLight.y *= -1.0;
 
-			// pull out the color vectors from the source image and the normal image
-			vec4 source = flixel_texture2D(bitmap, openfl_TextureCoordv);
-			vec4 normal = texture2D(normalTex, openfl_TextureCoordv);
+
 
 			// normalize the normal vector (honestly not sure why we need the *2.0-1 thing here, but it doesnt work without it)
+			// ANSWER:
+			// value comes in as a value between 0.0 and 1.0 (color value of 0-255)
+			// we want the range to be between -1.0 and 1.0
+			// Solution: -> multiply by 2 to convert range to span 0.0 to 2.0
+			//           -> subtract 1.0 to make it -1.0 to 1.0
 			normal = normalize(normal * 2.0 - 1.0);
 
-			// calculate what the angle is between the normal vector and the pixel to the light source.  An angle of 1.0 means the light source and the normal are parallel, and an angle of 0.0 means they are perpendicular
+			// calculate what the angle is between the normal vector and the pixel to the light source.
+			// An angle of 1.0 means the light source and the normal are parallel
+			// an angle of 0.0 means they are perpendicular
 			float cos_angle = dot(normal, toLight);
 
-			// clamp the "angle" which is now basically the intensity of the light on the pixel and bring up the bottom of the clamp to match the ambientRatio which basically just makes sure each pixel is drawn with at least SOME color instead of being completely black (use 0.0 for ratio if you want completely black)
+			// distance from the light
+			float dist = length(lPos - openfl_TextureCoordv);
+			float distanceImpact = clamp(dist, 0.01, 1.) / 1.;
+			distanceImpact = 1. - pow(distanceImpact, 5.);
+
+			cos_angle *= distanceImpact;
+
+			// clamp the "angle" which is now basically the intensity of the light on the pixel and
+			// bring up the bottom of the clamp to match the ambientRatio which basically just makes
+			// sure each pixel is drawn with at least SOME color instead of being completely black
+			// (use 0.0 for ratio if you want completely black)
 			cos_angle = clamp(cos_angle, ambientRatio, 1.0);
 
-			return vec3(source) * cos_angle;
+			// multiply the rgb of the source color vector by the angle/intensity to either brighten or dim the color at this pixel, and just use the original alpha from the source directly, dont manipulate that with light
+			source.rgb *= cos_angle;
+			source.a = 1.;
+
+			return source;
 		}
 
 		void main()
 		{
-			vec3 litColor = vec3(0.,0.,0.);
+			vec4 litColor = vec4(0.,0.,0.,0.);
 			if (numLights > 0.0) {
-				litColor += getLight(lightPos);
+				litColor = max(litColor, getLight(lightPos0));
 			}
 			if (numLights > 1.0) {
-				litColor += getLight(lightPos2);
+				litColor = max(litColor, getLight(lightPos1));
 			}
 			if (numLights > 2.0) {
-				litColor += getLight(lightPos3);
+				litColor = max(litColor, getLight(lightPos2));
 			}
 			if (numLights > 3.0) {
-				litColor += getLight(lightPos4);
+				litColor = max(litColor, getLight(lightPos3));
 			}
 			if (numLights > 4.0) {
-				litColor += getLight(lightPos5);
+				litColor = max(litColor, getLight(lightPos4));
 			}
 			if (numLights > 5.0) {
-				litColor += getLight(lightPos6);
+				litColor = max(litColor, getLight(lightPos5));
 			}
 			if (numLights > 6.0) {
-				litColor += getLight(lightPos7);
+				litColor = max(litColor, getLight(lightPos6));
 			}
 			if (numLights > 7.0) {
-				litColor += getLight(lightPos8);
+				litColor = max(litColor, getLight(lightPos7));
 			}
 			if (numLights > 8.0) {
-				litColor += getLight(lightPos9);
+				litColor = max(litColor, getLight(lightPos8));
 			}
 			if (numLights > 9.0) {
-				litColor += getLight(lightPos10);
+				litColor = max(litColor, getLight(lightPos9));
 			}
 
-			litColor /= numLights;
-
-			// multiply the rgb of the source color vector by the angle/intensity to either brighten or dim the color at this pixel, and just use the original alpha from the source directly, dont manipulate that with light
 			vec4 source = flixel_texture2D(bitmap, openfl_TextureCoordv);
-			gl_FragColor = vec4(litColor, source.a);
+
+			if (litColor.a < 1.) {
+				// counting lights on the alpha channel. 0 meansno lights lit this pixel;
+				litColor.rgb = source.rgb * ambientRatio;
+			}
+
+			gl_FragColor = vec4(litColor.rgb, source.a);
 		}')
 	public function new(spr:FlxSprite) {
 		super();
 		setNormalMapSprite(spr);
-		setLightPosition(new FlxPoint(0, 0));
+		setLightPositions([new FlxPoint(0, 0)]);
 		setLightHeight(1);
 		setAmbientRatio(1.0);
+
+		var ratio = 1.0 * FlxG.width / FlxG.height;
+        setAspectRatio(ratio);
 	}
 
 	// this is the normal sprite that you are going to pass into the shader
@@ -99,17 +137,12 @@ class NormalMapShader extends FlxShader {
 	}
 
 	// for this to work properly, you will need to convert your light position into local coordinates to the sprite, then into a ratio between 0-1 based on the sprite's total width (if it is a sprite sheet, you will need to take frameWidth * numOfFrames)
-	public function setLightPosition(pos:FlxPoint) {
-		lightPos.value = [pos.x, pos.y];
-		numLights.value = [2.0];
-	}
-
 	public function setLightPositions(positions:Array<FlxPoint>) {
 		if (positions.length > 0) {
-			lightPos.value = [positions[0].x, positions[0].y];
+			lightPos0.value = [positions[0].x, positions[0].y];
 		}
 		if (positions.length > 1) {
-			lightPos2.value = [positions[1].x, positions[1].y];
+			lightPos1.value = [positions[1].x, positions[1].y];
 		}
 		if (positions.length > 2) {
 			lightPos2.value = [positions[2].x, positions[2].y];
@@ -153,5 +186,9 @@ class NormalMapShader extends FlxShader {
 			ambientRatio.value = [1.0];
 		else
 			ambientRatio.value = [ratio];
+	}
+
+	public function setAspectRatio(ratio:Float) {
+		aspectRatio.value = [ratio];
 	}
 }

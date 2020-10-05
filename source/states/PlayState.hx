@@ -120,8 +120,8 @@ class PlayState extends FlxState {
 		super.create();
 
 		level = new Level(defaultBpm, defaultPixPerBeat);
-		// level.initDefaultBeatEvents(laneCoords);
-		parse(level.beatEvents);
+		// level.initTestBeatEvents(laneCoords);
+		level.addSegmentQueuedListener(parseBeatEvents);
 		level.loadOgmoMap();
 		level.addToState(this);
 
@@ -181,7 +181,7 @@ class PlayState extends FlxState {
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 	}
 
-	private function parse(events:Array<BeatEvent>) {
+	private function parseBeatEvents(events:Array<BeatEvent>) {
 		for (e in events) {
 			// floor this so we make sure to render sooner rather than later
 			var beginRenderBeat = Math.floor(1.0 * e.impactBeat - (focusBeat / e.speed));
@@ -223,6 +223,7 @@ class PlayState extends FlxState {
 		}, 100);
 
 		currentBeat++;
+		level.setBeat(currentBeat);
 
 		// cancel any in-progress tweens
 		for (t in tweens) {
@@ -350,6 +351,7 @@ class PlayState extends FlxState {
 					filters.remove(vhsFilter);
 					tweens.resize(0);
 					currentBeat = 0;
+					level.setBeat(currentBeat);
 					FmodManager.SetEventParameterOnSong("Silence", 0);
 					FmodManager.SetEventParameterOnSong("Miss", 0);
 					FmodManager.PlaySong(FmodSongs.Level1);
