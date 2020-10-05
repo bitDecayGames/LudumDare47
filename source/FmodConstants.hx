@@ -20,4 +20,5 @@ class FmodSFX {
     public static inline var Metranome130:String = "event:/SFX/Metranome/Metranome130";
     public static inline var Metranome135:String = "event:/SFX/Metranome/Metranome135";
     public static inline var Rewind:String = "event:/SFX/Rewind/Rewind";
+    public static inline var Explosion:String = "event:/SFX/Ship/Explosion";
 }

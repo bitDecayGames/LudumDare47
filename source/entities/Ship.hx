@@ -80,8 +80,8 @@ class Ship extends FlxSpriteGroup {
 		add(body);
 
 		jets = new ParentedSprite(this);
-		jets.loadGraphic(AssetPaths.jetsShip1__png, true, 45, 80);
-		jets.setPosition(17, 122 - 35);
+		jets.loadGraphic(AssetPaths.jetsShip1__png, true, 52, 80);
+		jets.setPosition(14, 96);
 		jets.allowCollisions = 0;
 
 		jets.animation.add("idle", [0]);

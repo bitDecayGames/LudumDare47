@@ -7,6 +7,7 @@ import flixel.tile.FlxTilemap;
 import flixel.FlxState;
 import flixel.FlxSprite;
 import flixel.FlxG;
+import flixel.FlxObject;
 
 class Level {
 	public var bpm: Float = 0.0;
@@ -16,15 +17,19 @@ class Level {
 
 	public var beatEvents:Array<BeatEvent> = [];
 
+	public var nextSegmentToLoad = 0;
 	public var trackSegments:Array<FlxTilemap> = [];
+	public var decorationSegments:Array<FlxTilemap> = [];
 
-	// intended to be a guide for us to use to rewind properly
-	public var visitedSegments:Array<Int> = [];
 	public var activeTrack:FlxTilemap;
+	public var activeDecoration:FlxTilemap;
 	public var queuedTrack:FlxTilemap;
+	public var queuedDecoration:FlxTilemap;
 
 	public var background:FlxSprite;
 	public var groundSpeed:Float = 4;
+
+	public var rewind:Bool = false;
 
 	public function new(bpm: Float, pixelsPerBeat: Int) {
 		this.bpm = bpm;
@@ -82,24 +87,21 @@ class Level {
 		for (t in trackSegments) {
 			state.add(t);
 		}
+		for (d in decorationSegments) {
+			state.add(d);
+		}
 	}
 
-	public function loadOgmoMap(ogmoFile:String, levelFile:String) {
-		var map = new FlxOgmo3Loader(ogmoFile, levelFile);
-
-		var track = map.loadTilemap(AssetPaths.tiles__png, "Track");
-		addSegment(track);
-
-		var newMapWhoDis = new FlxOgmo3Loader(ogmoFile, AssetPaths.segment01__json);
-		var track2 = newMapWhoDis.loadTilemap(AssetPaths.tiles__png, "Track");
-		addSegment(track2);
+	public function loadOgmoMap() {
+		var ogmoFile = AssetPaths.segment00__ogmo;
+		load(ogmoFile, AssetPaths.segment00__json);
+		load(ogmoFile, AssetPaths.segment01__json);
+		load(ogmoFile, AssetPaths.segment02__json);
+		load(ogmoFile, AssetPaths.segment03__json);
+		load(ogmoFile, AssetPaths.segment04__json);
 
 		// TODO May not need to do this
 		// FlxG.worldBounds.set(0, 0, walls.width, walls.height);
-		// groundType = map.loadTilemap(AssetPaths.groundTypes__png, "GroundType");
-		// groundType.setTileProperties(1, FlxObject.ANY, setPlayerGroundType("concrete"));
-		// groundType.setTileProperties(2, FlxObject.ANY, setPlayerGroundType("grass"));
-		// groundType.setTileProperties(3, FlxObject.ANY, setPlayerGroundType("metal"));
 
 		// map.loadEntities(function loadEntity(entity:EntityData) {
 		// 	switch (entity.name) {
@@ -112,7 +114,19 @@ class Level {
 		// 			throw 'Unrecognized entity name: ${entity.name}';
 		// 	}
 		// }, "Entities");
-		queueSegmentIfNeeded();
+
+		queueSegmentIfNeeded(rewind);
+	}
+
+	private function load(ogmoFile:String, levelFile:String) {
+		var map = new FlxOgmo3Loader(ogmoFile, levelFile);
+
+		var track = map.loadTilemap(AssetPaths.tiles__png, "Track");
+		track.setTileProperties(1, FlxObject.ANY);
+		addSegment(track);
+
+		var decoration = map.loadTilemap(AssetPaths.tiles__png, "lanesAndLines");
+		addDecoration(decoration);
 	}
 
 	private function addSegment(s:FlxTilemap) {
@@ -121,43 +135,125 @@ class Level {
 		trackSegments.push(s);
 	}
 
+	private function addDecoration(d:FlxTilemap) {
+		d.kill();
+		d.x -= xAlign;
+		decorationSegments.push(d);
+	}
+
 	public function update(elapsed:Float) {
 		var bps = bpm / 60;
 		var dy = elapsed * bps * pixelsPerBeat * groundSpeed;
-		activeTrack.y += dy;
-		queuedTrack.y += dy;
 
-		if (activeTrack.y > FlxG.height) {
-			activeTrack.kill();
-			activeTrack = queuedTrack;
-			queuedTrack = null;
+		if (rewind) {
+			activeTrack.y -= dy;
+			activeDecoration.y -= dy;
+			queuedTrack.y -= dy;
+			queuedDecoration.y -= dy;
+
+			if (activeTrack.y < -activeTrack.height) {
+				activeTrack.kill();
+				activeTrack = queuedTrack;
+				queuedTrack = null;
+			}
+
+			if (activeDecoration.y < -activeDecoration.height) {
+				activeDecoration.kill();
+				activeDecoration = queuedDecoration;
+				queuedDecoration = null;
+			}
+		} else {
+			activeTrack.y += dy;
+			activeDecoration.y += dy;
+			queuedTrack.y += dy;
+			queuedDecoration.y += dy;
+
+			if (activeTrack.y > FlxG.height) {
+				activeTrack.kill();
+				activeTrack = queuedTrack;
+				queuedTrack = null;
+			}
+
+			if (activeDecoration.y > FlxG.height) {
+				activeDecoration.kill();
+				activeDecoration = queuedDecoration;
+				queuedDecoration = null;
+			}
 		}
 
-		queueSegmentIfNeeded();
+		queueSegmentIfNeeded(rewind);
 	}
 
-	private function queueSegmentIfNeeded() {
+	public function resetTrack() {
+		if (activeTrack != null) {
+			activeTrack.kill();
+			activeTrack = null;
+		}
+		
+		if (queuedTrack != null) {
+			queuedTrack.kill();
+			queuedTrack = null;
+		}
+		
+		nextSegmentToLoad = 0;
+		
+		queueSegmentIfNeeded(false);
+	}
+
+	private function queueSegmentIfNeeded(rewind:Bool) {
 
 		if (activeTrack == null) {
 			// first segment
-			activeTrack = trackSegments[0];
+			activeTrack = trackSegments[nextSegmentToLoad++ % trackSegments.length];
 			activeTrack.revive();
 			activeTrack.y = -activeTrack.height + FlxG.height;
-			visitedSegments.push(0);
+		}
+
+		if (activeDecoration == null) {
+			// first decoration
+			activeDecoration = decorationSegments[nextSegmentToLoad++ % decorationSegments.length];
+			activeDecoration.revive();
+			activeDecoration.y = -activeDecoration.height + FlxG.height;
 		}
 
 		if (queuedTrack == null) {
-			// TODO: this will be randomized, storing what we visit so we can rewind propery
-			if (activeTrack == trackSegments[0]) {
-				queuedTrack = trackSegments[1];
-				visitedSegments.push(1);
-			} else {
-				queuedTrack = trackSegments[0];
-				visitedSegments.push(0);
-			}
-
+			queuedTrack = trackSegments[nextSegmentNum(rewind)];
 			queuedTrack.revive();
-			queuedTrack.y = activeTrack.y - queuedTrack.height;
+
+			if (rewind) {
+				queuedTrack.y = activeTrack.y + activeTrack.height;
+			} else {
+				queuedTrack.y = activeTrack.y - queuedTrack.height;
+			}
 		}
+
+		if (queuedDecoration == null) {
+			queuedDecoration = decorationSegments[nextSegmentNum(rewind)];
+			queuedDecoration.revive();
+
+			if (rewind) {
+				queuedDecoration.y = activeDecoration.y + activeDecoration.height;
+			} else {
+				queuedDecoration.y = activeDecoration.y - queuedDecoration.height;
+			}
+		}
+	}
+
+	private function nextSegmentNum(rewind:Bool):Int {
+		if (rewind) {
+			nextSegmentToLoad--;
+		} else {
+			nextSegmentToLoad++;
+		}
+
+		if (nextSegmentToLoad >= trackSegments.length) {
+			nextSegmentToLoad -= trackSegments.length;
+		}
+
+		if (nextSegmentToLoad < 0) {
+			nextSegmentToLoad += trackSegments.length;
+		}
+
+		return nextSegmentToLoad;
 	}
 }
