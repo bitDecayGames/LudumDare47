@@ -177,7 +177,6 @@ class Level {
 			activeSegment = levelSegments[nextSegmentNum(rewind)];
 			activeSegment.revive();
 			activeSegment.setY(-activeSegment.getHeight() + FlxG.height);
-			dispatchSegmentQueuedEvent(activeSegment.generateBeatEvents(currentBeat, pixelsPerBeat));
 		}
 
 		if (queuedSegment == null) {
