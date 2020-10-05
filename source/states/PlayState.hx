@@ -318,25 +318,8 @@ class PlayState extends FlxState {
 				}
 
 				FmodManager.RegisterCallbacksForSound(fmodRewind, () -> {
-					// level.rewind = false;
-					// allowBeats = true;
-					// // This should reference the level default in the future
-					// level.groundSpeed = 4;
-					// isShaderActive = false;
-					// filters.remove(vhsFilter);
-					// tweens.resize(0);
-					// currentBeat = 0;
-					// level.setBeat(currentBeat);
-					// FmodManager.SetEventParameterOnSong("Silence", 0);
-					// FmodManager.SetEventParameterOnSong("Miss", 0);
-					// FmodManager.PlaySong(FmodSongs.Level1);
-					// playerLane = 2;
-					// player.x = laneCoords[playerLane] - player.width/2;
-					// enableParentedSprite(player.ship);
-					// FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
-					// beaters.clear();
-					// level.resetTrack();
-
+					FmodManager.SetEventParameterOnSong("Miss", 0);
+					FmodManager.SetEventParameterOnSong("Silence", 0);
 					FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState());
 				}, FmodCallback.STOPPED);
 			}, FmodCallback.TIMELINE_MARKER);
