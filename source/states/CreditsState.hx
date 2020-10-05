@@ -69,6 +69,7 @@ class CreditsState extends FlxUIState {
         }
 
         creditsTextVerticalOffset = FlxG.height;
+        creditsTextVerticalOffset += 25;
 
         for (flxText in _txtCreator) {
             flxText.setPosition(FlxG.width - flxText.width, creditsTextVerticalOffset);
