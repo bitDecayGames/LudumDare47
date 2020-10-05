@@ -19,6 +19,7 @@ class CreditsState extends FlxUIState {
 
     var _txtCreditsTitle:FlxText;
     var _txtThankYou:FlxText;
+    var _txtBestCombo:FlxText;
     var _txtRole:Array<FlxText>;
     var _txtCreator:Array<FlxText>;
 
@@ -47,6 +48,7 @@ class CreditsState extends FlxUIState {
 
         _txtCreditsTitle = new FlxText();
         _txtThankYou = new FlxText();
+        _txtBestCombo = new FlxText();
         _txtRole = new Array<FlxText>();
         _txtCreator = new Array<FlxText>();
 
@@ -106,6 +108,15 @@ class CreditsState extends FlxUIState {
         _txtThankYou.setPosition(FlxG.width/2 - _txtThankYou.width/2, haxeFlixelLogo.y + haxeFlixelLogo.height + FlxG.height / 2);
         add(_txtThankYou);
         _allCreditElements.push(_txtThankYou);
+
+        if (Statics.MaxCombo > 0) {
+            _txtBestCombo.size = 40;
+            _txtBestCombo.alignment = FlxTextAlign.CENTER;
+            _txtBestCombo.text = "BEST COMBO: " + Statics.MaxCombo;
+            _txtBestCombo.setPosition(FlxG.width/2 - _txtBestCombo.width/2, _txtThankYou.y + _txtThankYou.height + 24);
+            add(_txtBestCombo);
+            _allCreditElements.push(_txtBestCombo);
+        }
     }
 
     private function AddSectionToCreditsTextArrays(role:String, creators:Array<String>, finalRoleArray:Array<FlxText>, finalCreatorsArray:Array<FlxText>) {
