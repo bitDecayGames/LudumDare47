@@ -8,7 +8,7 @@ class NormalMapShader extends FlxShader {
 	@:glFragmentSource('
 		#pragma header
 		uniform sampler2D normalTex;
-		uniform vec2 lightPos;
+		uniform vec2 lightPos1;
 		uniform vec2 lightPos2;
 		uniform vec2 lightPos3;
 		uniform vec2 lightPos4;
@@ -17,7 +17,7 @@ class NormalMapShader extends FlxShader {
 		uniform vec2 lightPos7;
 		uniform vec2 lightPos8;
 		uniform vec2 lightPos9;
-		uniform vec2 lightPos10;
+		uniform vec2 lightPos0;
 		uniform float numLights;
 		uniform float lightHeight;
 		uniform float ambientRatio;
@@ -106,10 +106,10 @@ class NormalMapShader extends FlxShader {
 
 	public function setLightPositions(positions:Array<FlxPoint>) {
 		if (positions.length > 0) {
-			lightPos.value = [positions[0].x, positions[0].y];
+			lightPos0.value = [positions[0].x, positions[0].y];
 		}
 		if (positions.length > 1) {
-			lightPos2.value = [positions[1].x, positions[1].y];
+			lightPos1.value = [positions[1].x, positions[1].y];
 		}
 		if (positions.length > 2) {
 			lightPos2.value = [positions[2].x, positions[2].y];
