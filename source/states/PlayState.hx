@@ -129,6 +129,7 @@ class PlayState extends FlxState {
 		level.addSegmentQueuedListener(parseBeatEvents);
 		level.loadOgmoMap();
 		level.addToState(this);
+		// level.queueEndOfLevel();
 
 		level.addBanners();
 
