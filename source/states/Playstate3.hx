@@ -355,8 +355,8 @@ class PlayState3 extends FlxState {
 		}
 
 		if (currentBeat >= 204 || FlxG.keys.justPressed.N) {
-			FmodFlxUtilities.TransitionToState(new CreditsState());
 			FmodManager.PlaySong(FmodSongs.Level2New);
+			FmodFlxUtilities.TransitionToState(new CreditsState());
 		}
 
 		shader.iTime.value[0] += elapsed;
