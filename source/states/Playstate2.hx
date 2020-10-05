@@ -126,7 +126,7 @@ class PlayState2 extends FlxState {
 		level = new Level(defaultBpm, defaultPixPerBeat);
 		// level.initTestBeatEvents(laneCoords);
 		level.addSegmentQueuedListener(parseBeatEvents);
-		level.loadOgmoMap();
+		level.loadOgmoMap(2);
 		level.addToState(this);
 
 		comboTitle = new FlxText(10, FlxG.height-150, 1000, "Combo", 25);

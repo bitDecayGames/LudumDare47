@@ -32,6 +32,46 @@ class Level {
 
 	var endLevel = false;
 
+	var level1Segments = [
+		AssetPaths.segment00__json,
+		AssetPaths.segment00__json,
+		AssetPaths.segment07__json,
+		AssetPaths.segment09__json,
+		AssetPaths.segment08__json,
+		AssetPaths.segment00__json,
+		AssetPaths.segment01__json,
+		AssetPaths.segment02__json,
+		// AssetPaths.segment11__json,
+	];
+
+	var level2Segments = [
+		AssetPaths.segment00__json,
+		AssetPaths.segment07__json,
+		AssetPaths.segment08__json,
+		AssetPaths.segment09__json,
+		AssetPaths.segment01__json,
+		AssetPaths.segment02__json,
+		AssetPaths.segment03__json,
+		AssetPaths.segment04__json,
+		AssetPaths.segment05__json,
+		AssetPaths.segment06__json,
+		AssetPaths.segment10__json,
+	];
+
+	var level3Segments = [
+		AssetPaths.segment00__json,
+		AssetPaths.segment07__json,
+		AssetPaths.segment08__json,
+		AssetPaths.segment09__json,
+		AssetPaths.segment01__json,
+		AssetPaths.segment02__json,
+		AssetPaths.segment03__json,
+		AssetPaths.segment04__json,
+		AssetPaths.segment05__json,
+		AssetPaths.segment06__json,
+		AssetPaths.segment10__json,
+	];
+
 	public function new(bpm:Float, pixelsPerBeat:Int) {
 		this.bpm = bpm;
 		this.pixelsPerBeat = pixelsPerBeat;
@@ -108,21 +148,9 @@ class Level {
 		}
 	}
 
-	public function loadOgmoMap() {
+	public function loadOgmoMap(levelNum:Int) {
 		var ogmoFile = AssetPaths.test__ogmo;
-		var segments = [
-			AssetPaths.segment00__json,
-			AssetPaths.segment07__json,
-			AssetPaths.segment08__json,
-			AssetPaths.segment09__json,
-			AssetPaths.segment01__json,
-			AssetPaths.segment02__json,
-			AssetPaths.segment03__json,
-			AssetPaths.segment04__json,
-			AssetPaths.segment05__json,
-			AssetPaths.segment06__json,
-			AssetPaths.segment10__json,
-		];
+		var segments = getSegmentsForLevel(levelNum);
 		for (s in segments) {
 			var ls = new LevelSegment();
 			ls.load(ogmoFile, s);
@@ -205,6 +233,19 @@ class Level {
 		endLevel = true;
 		levelSegments = endOfLevelSegments;
 		nextSegmentToLoad = -1;
+	}
+
+	private function getSegmentsForLevel(levelNum:Int): Array<String> {
+		if (levelNum == 1) {
+			return level1Segments;
+		}
+		if (levelNum == 2) {
+			return level2Segments;
+		}
+		if (levelNum == 3) {
+			return level3Segments;
+		}
+		throw 'Unrecognized level: ${levelNum}. Valid levels are 1,2, or 3';
 	}
 
 	private function queueSegmentIfNeeded(rewind:Bool) {
