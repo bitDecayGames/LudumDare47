@@ -41,7 +41,7 @@ class Player extends FlxSpriteGroup {
 		jets.setPosition(11, 106);
 		jets.allowCollisions = 0;
 
-		jets.animation.add("idle", [0]);
+		jets.animation.add("idle", [for(i in 0...11) i]);
 		jets.animation.play("idle");
 		add(jets);
 		newTarget();
