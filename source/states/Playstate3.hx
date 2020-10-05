@@ -2,6 +2,7 @@ package states;
 
 import states.Playstate3.PlayState3;
 import states.Playstate2.PlayState2;
+import states.CreditsState;
 import entities.Light;
 import flixel.math.FlxPoint;
 import com.bitdecay.analytics.Bitlytics;
@@ -351,7 +352,7 @@ class PlayState3 extends FlxState {
 		}
 
 		if (currentBeat >= 204){
-			FmodFlxUtilities.TransitionToStateAndStopMusic(new MainMenuState());
+			FmodFlxUtilities.TransitionToStateAndStopMusic(new CreditsState());
 		}
 
 		shader.iTime.value[0] += elapsed;
@@ -425,10 +426,6 @@ class PlayState3 extends FlxState {
 			if (p.getMidpoint().distanceTo(screenCenter) < FlxG.height + 100) {
 				lps.push(p.getMidpoint());
 			}
-		}
-
-		if (lps.length > 0) {
-			trace("" + lps.length + " lights in range");
 		}
 
 		player.setLightPositions(lps);

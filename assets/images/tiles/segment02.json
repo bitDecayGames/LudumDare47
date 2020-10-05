@@ -79,7 +79,7 @@
           "id": 0,
           "_eid": "87449373",
           "x": 160,
-          "y": 1540,
+          "y": 1680,
           "originX": 0,
           "originY": 0,
           "values": {"speed": 1}
@@ -89,20 +89,20 @@
           "id": 1,
           "_eid": "87449373",
           "x": 320,
-          "y": 1540,
+          "y": 1680,
           "originX": 0,
           "originY": 0,
           "values": {"speed": 1}
         },
         {
-          "name": "slowShip",
-          "id": 3,
-          "_eid": "87449373",
-          "x": 320,
-          "y": 3080,
+          "name": "fastShip",
+          "id": 4,
+          "_eid": "87444312",
+          "x": 240,
+          "y": 2240,
           "originX": 0,
           "originY": 0,
-          "values": {"speed": 1}
+          "values": {"speed": 2}
         }
       ]
     },

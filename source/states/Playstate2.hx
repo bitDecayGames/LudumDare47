@@ -425,10 +425,6 @@ class PlayState2 extends FlxState {
 			}
 		}
 
-		if (lps.length > 0) {
-			trace("" + lps.length + " lights in range");
-		}
-
 		player.setLightPositions(lps);
 		for (ship in beaters) {
 			ship.setLightPositions(lps);
