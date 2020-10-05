@@ -13,7 +13,7 @@ using extensions.FlxObjectExt;
 class Player extends FlxSpriteGroup {
 	var actions = new Actions();
 
-	var hitbox = new FlxPoint(60, 90);
+	var hitbox = new FlxPoint(45, 90);
 
 	var noseBuffer = 5;
 
@@ -30,7 +30,7 @@ class Player extends FlxSpriteGroup {
 		ship = new ParentedSprite(this);
 		ship.loadGraphic(AssetPaths.player__png, true, 90, 135, true);
 		ship.setSize(hitbox.x, hitbox.y);
-		ship.offset.set(15, noseBuffer);
+		ship.offset.set(22.5, noseBuffer);
 		ship.shader = _shader;
 		this.setMidpoint(x, y);
 		ship.animation.add("idle", [0]);

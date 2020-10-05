@@ -9,10 +9,10 @@ class Light extends FlxSprite {
 	public function new(x:Float, y:Float) {
 		super(x, y, AssetPaths.lightbulb__png);
 
-		#if !FLX_NO_DEBUG
-		visible = true;
-		#else
+		// #if !FLX_NO_DEBUG
+		// visible = true;
+		// #else
 		visible = false;
-		#end
+		// #end
 	}
 }
