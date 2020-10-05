@@ -1,5 +1,6 @@
 package states;
 
+import com.bitdecay.analytics.Bitlytics;
 import haxefmod.flixel.FmodFlxUtilities;
 import widgets.BeatTracker;
 import flixel.FlxObject;
@@ -24,6 +25,7 @@ import flixel.input.actions.FlxAction.FlxActionDigital;
 import flixel.FlxG;
 import entities.Ship;
 import entities.Player;
+import entities.Explosion;
 import haxefmod.FmodEvents.FmodCallback;
 import flixel.FlxState;
 import actions.Actions;
@@ -43,7 +45,6 @@ import haxefmod.flixel.FmodFlxUtilities;
 using extensions.FlxObjectExt;
 
 class PlayState extends FlxState {
-
 	// TODO: These wil likely live somewhere else ultimately
 	var defaultBpm = 130.0; // hardcode these for now, but we could ideally get them from FMOD (but not for this jam)
 	var defaultPixPerBeat = 100;
@@ -51,8 +52,10 @@ class PlayState extends FlxState {
 	var screenBeatSpaces = (FlxG.height / 100);
 	var focusBeat = 5; // this is the beat where things align on screen (the one right in front of the player)
 
+	var comboTitle:FlxText;
 	var comboText:FlxText;
 	var comboCounter:Int = 0;
+	var maxComboText:FlxText;
 
 	var filters:Array<BitmapFilter> = new Array<BitmapFilter>();
 	var blurFilter:BlurFilter = new BlurFilter(2, 0, openfl.filters.BitmapFilterQuality.HIGH);
@@ -69,8 +72,8 @@ class PlayState extends FlxState {
 
 	// Failure text
 	var _txtDontGiveUp:FlxText;
-    var _txtPressSpace:FlxText;
-    var _showRetryText:Bool = false;
+	var _txtPressSpace:FlxText;
+	var _showRetryText:Bool = false;
 
 	var lastTick:Float = 0.0;
 	var tickDiff:Float = 0.0;
@@ -116,8 +119,7 @@ class PlayState extends FlxState {
 
 	var level:Level;
 
-	override public function create()
-	{
+	override public function create() {
 		super.create();
 
 		level = new Level(defaultBpm, defaultPixPerBeat);
@@ -126,18 +128,22 @@ class PlayState extends FlxState {
 		level.loadOgmoMap();
 		level.addToState(this);
 
-		comboText = new FlxText(10, FlxG.height-45, 100, "0", 30);
+		comboTitle = new FlxText(10, FlxG.height-150, 1000, "Combo", 25);
+		add(comboTitle);
+		comboText = new FlxText(10, FlxG.height-115, 1000, "Current:0", 20);
 		add(comboText);
+		maxComboText = new FlxText(10, FlxG.height-85, 1000, "Max:0", 20);
+		add(maxComboText);
 
 		loadRetryText();
 
-		timePerBeat = 60.0/level.bpm;
-		halfTime = timePerBeat/2;
+		timePerBeat = 60.0 / level.bpm;
+		halfTime = timePerBeat / 2;
 		trace("timePerBeat: " + timePerBeat);
 		trace("halfTime: " + halfTime);
 
 		var shaderInput = new ShaderInput<BitmapData>();
-		var noiseBitmap = new FlxSprite(0,0, "assets/images/NoiseTexture.png");
+		var noiseBitmap = new FlxSprite(0, 0, "assets/images/NoiseTexture.png");
 		shaderInput.input = noiseBitmap.pixels.clone();
 
 		camera.setFilters(filters);
@@ -168,7 +174,7 @@ class PlayState extends FlxState {
 		actions = new Actions();
 
 		player = new Player(0, 0);
-		player.x = laneCoords[playerLane] - player.width/2;
+		player.x = laneCoords[playerLane] - player.width / 2;
 		player.y = (focusBeat * level.pixelsPerBeat) + 30;
 
 		playerGroup.add(player);
@@ -206,8 +212,7 @@ class PlayState extends FlxState {
 	}
 
 	private function beat() {
-
-		if (!allowBeats){
+		if (!allowBeats) {
 			return;
 		}
 
@@ -219,7 +224,7 @@ class PlayState extends FlxState {
 
 		FlxG.camera.shake(0.0025, 0.05);
 		filters.push(blurFilter);
-		Timer.delay(()->{
+		Timer.delay(() -> {
 			filters.remove(blurFilter);
 		}, 100);
 
@@ -249,14 +254,7 @@ class PlayState extends FlxState {
 			ship.beat++;
 
 			// set up tween to interpolate using our bpm to keep things aligned
-			tweens.push(FlxTween.linearMotion(
-				ship,
-				ship.x,
-				ship.y,
-				ship.x,
-				ship.startY + ship.beat * (ship.speed * level.pixelsPerBeat),
-				60.0 / level.bpm)
-			);
+			tweens.push(FlxTween.linearMotion(ship, ship.x, ship.y, ship.x, ship.startY + ship.beat * (ship.speed * level.pixelsPerBeat), 60.0 / level.bpm));
 		}
 	}
 
@@ -267,33 +265,22 @@ class PlayState extends FlxState {
 	}
 
 	private function alignPlayerToLane():Bool {
-		var newPlayerLane = Std.int(Math.max(0, Math.min(laneCoords.length-1, targetPlayerLane)));
+		var newPlayerLane = Std.int(Math.max(0, Math.min(laneCoords.length - 1, targetPlayerLane)));
 		if (newPlayerLane != playerLane) {
 			playerLane = newPlayerLane;
-			playerTween = FlxTween.linearMotion(
-				player,
-				player.x,
-				player.y,
-				laneCoords[playerLane] - player.width/2,
-				player.y,
-				timePerBeat / 2
-				);
+			playerTween = FlxTween.linearMotion(player, player.x, player.y, laneCoords[playerLane] - player.width / 2, player.y, timePerBeat / 2);
 			return true;
 		}
 		return false;
 	}
 
-	private function killPlayer(playerPs: ParentedSprite) {
+	private function killPlayer(playerPs:ParentedSprite) {
 		disableParentedSprite(playerPs);
 		FmodManager.PlaySoundOneShot(FmodSFX.Explosion);
-		var shipExplosion:FlxSprite = new FlxSprite();
-		shipExplosion.loadGraphic(AssetPaths.shipExplode__png, true, 160, 980, true);
-		shipExplosion.setPosition(playerPs.x-50, playerPs.y-850);
-		shipExplosion.animation.add("explode", [0,1,2,3,4,5,6,7,8,9,10,11], 12, false);
-		shipExplosion.animation.play("explode");
-		var explosionTween = FlxTween.tween(shipExplosion, { x: shipExplosion.x, y: shipExplosion.y+1800}, 1.8);
+		var shipExplosion = new Explosion(playerPs.x, playerPs.y);
+		var explosionTween = FlxTween.tween(shipExplosion, {x: shipExplosion.x, y: shipExplosion.y + 1800}, 1.8);
 		FmodManager.SetEventParameterOnSong("Silence", 1);
-		explosionTween.onComplete = (t)->{
+		explosionTween.onComplete = (t) -> {
 			Rewind();
 		};
 
@@ -302,19 +289,18 @@ class PlayState extends FlxState {
 		TextPop.pop(Std.int(playerPs.x), Std.int(playerPs.y), "Pink Floyd'd", new FlyBack(-300, 1), 25);
 	}
 
-	private function handlePlayerCarOverlap(playerPs: ParentedSprite, ai: ParentedSprite) {
+	private function handlePlayerCarOverlap(playerPs:ParentedSprite, ai:ParentedSprite) {
 		disableParentedSprite(ai);
 
 		killPlayer(playerPs);
 	}
 
-	private function handlePlayerWallOverlap(playerPs: ParentedSprite, wall: FlxSprite) {
+	private function handlePlayerWallOverlap(playerPs:ParentedSprite, wall:FlxSprite) {
 		killPlayer(playerPs);
 	}
 
 	private function Rewind() {
-
-		Timer.delay(()->{
+		Timer.delay(() -> {
 			allowBeats = false;
 			FmodManager.StopSong();
 			var fmodRewind = FmodManager.PlaySoundWithReference(FmodSFX.Rewind);
@@ -325,7 +311,7 @@ class PlayState extends FlxState {
 					t.cancelChain();
 				}
 			}
-			FmodManager.RegisterCallbacksForSound(fmodRewind, ()->{
+			FmodManager.RegisterCallbacksForSound(fmodRewind, () -> {
 				level.rewind = true;
 				level.groundSpeed = currentBeat;
 				isShaderActive = true;
@@ -333,36 +319,13 @@ class PlayState extends FlxState {
 				tweens.resize(0);
 				// add reverse tweens
 				for (ship in beaters) {
-					tweens.push(FlxTween.linearMotion(
-						ship,
-						ship.x,
-						ship.y,
-						ship.x,
-						ship.y - currentBeat * (ship.speed * level.pixelsPerBeat),
-						60.0 / level.bpm)
-					);
+					tweens.push(FlxTween.linearMotion(ship, ship.x, ship.y, ship.x, ship.y - currentBeat * (ship.speed * level.pixelsPerBeat),
+						60.0 / level.bpm));
 				}
 
-				FmodManager.RegisterCallbacksForSound(fmodRewind, ()->{
-					// level.rewind = false;
-					// allowBeats = true;
-					// // This should reference the level default in the future
-					// level.groundSpeed = 4;
-					// isShaderActive = false;
-					// filters.remove(vhsFilter);
-					// tweens.resize(0);
-					// currentBeat = 0;
-					// level.setBeat(currentBeat);
-					// FmodManager.SetEventParameterOnSong("Silence", 0);
-					// FmodManager.SetEventParameterOnSong("Miss", 0);
-					// FmodManager.PlaySong(FmodSongs.Level1);
-					// playerLane = 2;
-					// player.x = laneCoords[playerLane] - player.width/2;
-					// enableParentedSprite(player.ship);
-					// FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
-					// beaters.clear();
-					// level.resetTrack();
-
+				FmodManager.RegisterCallbacksForSound(fmodRewind, () -> {
+					FmodManager.SetEventParameterOnSong("Miss", 0);
+					FmodManager.SetEventParameterOnSong("Silence", 0);
 					FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState());
 				}, FmodCallback.STOPPED);
 			}, FmodCallback.TIMELINE_MARKER);
@@ -378,50 +341,51 @@ class PlayState extends FlxState {
 		if (FlxG.keys.justPressed.N) {
 			FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState());
 		}
-		if (FlxG.keys.justPressed.P)
-		{
-				isShaderActive = !isShaderActive;
-				if (isShaderActive) {
-					filters.push(vhsFilter);
-				} else {
-					filters.remove(vhsFilter);
-				}
+		if (FlxG.keys.justPressed.P) {
+			isShaderActive = !isShaderActive;
+			if (isShaderActive) {
+				filters.push(vhsFilter);
+			} else {
+				filters.remove(vhsFilter);
+			}
 		}
 
 		if (playerTween == null || playerTween.finished) {
 			if (actions.left.check()) {
 				targetPlayerLane = playerLane - 1;
-				if(alignPlayerToLane() && player.active) {
+				if (alignPlayerToLane() && player.active) {
 					calculateBeatScore(timestamp);
 				}
 			}
 
 			if (actions.right.check()) {
 				targetPlayerLane = playerLane + 1;
-				if(alignPlayerToLane() && player.active) {
+				if (alignPlayerToLane() && player.active) {
 					calculateBeatScore(timestamp);
 				}
 			}
 		}
 
-		_txtDontGiveUp.x = FlxG.width/2 - _txtDontGiveUp.width/2;
-        _txtPressSpace.x = FlxG.width/2 - _txtPressSpace.width/2;
+		_txtDontGiveUp.x = FlxG.width / 2 - _txtDontGiveUp.width / 2;
+		_txtPressSpace.x = FlxG.width / 2 - _txtPressSpace.width / 2;
 
-        if (FlxG.keys.justPressed.O) {
-            _showRetryText = !_showRetryText;
-        }
+		if (FlxG.keys.justPressed.O) {
+			_showRetryText = !_showRetryText;
+		}
 
-        if (_showRetryText) {
-            _txtDontGiveUp.visible = true;
-            _txtPressSpace.visible = true;
-        } else {
-            _txtDontGiveUp.visible = false;
-            _txtPressSpace.visible = false;
-        }
+		if (_showRetryText) {
+			_txtDontGiveUp.visible = true;
+			_txtPressSpace.visible = true;
+		} else {
+			_txtDontGiveUp.visible = false;
+			_txtPressSpace.visible = false;
+		}
 
 		FlxG.overlap(playerGroup, beaters, handlePlayerCarOverlap);
 
-		comboText.text = Std.string(comboCounter);
+		comboText.text = "Current: " + comboCounter;
+		Statics.MaxCombo = Math.max(Statics.MaxCombo, comboCounter);
+		maxComboText.text = "Max: " + Statics.MaxCombo;
 
 		// Level updates
 		level.update(elapsed);
@@ -448,7 +412,7 @@ class PlayState extends FlxState {
 		}
 	}
 
-	private function disableParentedSprite(parentedSprite: ParentedSprite) {
+	private function disableParentedSprite(parentedSprite:ParentedSprite) {
 		parentedSprite.visible = false;
 		parentedSprite.parent.visible = false;
 		parentedSprite.active = false;
@@ -456,7 +420,7 @@ class PlayState extends FlxState {
 		parentedSprite.allowCollisions = 0;
 	}
 
-	private function enableParentedSprite(parentedSprite: ParentedSprite) {
+	private function enableParentedSprite(parentedSprite:ParentedSprite) {
 		parentedSprite.visible = true;
 		parentedSprite.parent.visible = true;
 		parentedSprite.active = true;
@@ -466,20 +430,20 @@ class PlayState extends FlxState {
 
 	private function loadRetryText() {
 		_txtDontGiveUp = new FlxText();
-        _txtDontGiveUp.setPosition(FlxG.width/2, FlxG.height/4);
-        _txtDontGiveUp.size = 30;
-        _txtDontGiveUp.alignment = FlxTextAlign.CENTER;
-        _txtDontGiveUp.text = "Don't give up!";
+		_txtDontGiveUp.setPosition(FlxG.width / 2, FlxG.height / 4);
+		_txtDontGiveUp.size = 30;
+		_txtDontGiveUp.alignment = FlxTextAlign.CENTER;
+		_txtDontGiveUp.text = "Don't give up!";
 
-        add(_txtDontGiveUp);
+		add(_txtDontGiveUp);
 
-        _txtPressSpace = new FlxText();
-        _txtPressSpace.setPosition(FlxG.width/2, FlxG.height/3);
-        _txtPressSpace.size = 20;
-        _txtPressSpace.alignment = FlxTextAlign.CENTER;
-        _txtPressSpace.text = "Press Spacebar to continue";
+		_txtPressSpace = new FlxText();
+		_txtPressSpace.setPosition(FlxG.width / 2, FlxG.height / 3);
+		_txtPressSpace.size = 20;
+		_txtPressSpace.alignment = FlxTextAlign.CENTER;
+		_txtPressSpace.text = "Press Spacebar to continue";
 
-        add(_txtPressSpace);
+		add(_txtPressSpace);
 	}
 
 	private function resetCombo() {
@@ -491,10 +455,12 @@ class PlayState extends FlxState {
 	override public function onFocusLost():Void {
 		super.onFocusLost();
 		FmodManager.PauseSong();
+		Bitlytics.Instance().Pause();
 	}
 
 	override public function onFocus():Void {
 		super.onFocus();
 		FmodManager.UnpauseSong();
+		Bitlytics.Instance().Resume();
 	}
 }
