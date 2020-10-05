@@ -16,7 +16,7 @@ class Level {
 
 	public var beatEvents:Array<BeatEvent> = [];
 
-	public var nextSegmentToLoad = 0;
+	public var nextSegmentToLoad = -1;
 	public var trackSegments:Array<FlxTilemap> = [];
 
 	public var activeTrack:FlxTilemap;
@@ -25,6 +25,7 @@ class Level {
 	public var background:FlxSprite;
 	public var groundSpeed:Float = 4;
 
+	public var lastRewind:Bool = false;
 	public var rewind:Bool = false;
 
 	public function new(bpm: Float, pixelsPerBeat: Int) {
@@ -132,6 +133,15 @@ class Level {
 		var bps = bpm / 60;
 		var dy = elapsed * bps * pixelsPerBeat * groundSpeed;
 
+		if (rewind != lastRewind) {
+			// need to flip stuff around
+			var temp = activeTrack;
+			activeTrack = queuedTrack;
+			queuedTrack = temp;
+
+			lastRewind = rewind;
+		}
+
 		if (rewind) {
 			activeTrack.y -= dy;
 			queuedTrack.y -= dy;
@@ -157,26 +167,28 @@ class Level {
 	}
 
 	public function resetTrack() {
+		rewind = false;
+
 		if (activeTrack != null) {
 			activeTrack.kill();
 			activeTrack = null;
 		}
-		
+
 		if (queuedTrack != null) {
 			queuedTrack.kill();
 			queuedTrack = null;
 		}
-		
-		nextSegmentToLoad = 0;
-		
-		queueSegmentIfNeeded(false);
+
+		nextSegmentToLoad = -1;
+		lastRewind = rewind;
+		queueSegmentIfNeeded(rewind);
 	}
 
 	private function queueSegmentIfNeeded(rewind:Bool) {
 
 		if (activeTrack == null) {
 			// first segment
-			activeTrack = trackSegments[nextSegmentToLoad++ % trackSegments.length];
+			activeTrack = trackSegments[nextSegmentNum(rewind)];
 			activeTrack.revive();
 			activeTrack.y = -activeTrack.height + FlxG.height;
 		}
