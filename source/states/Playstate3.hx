@@ -490,6 +490,10 @@ class PlayState3 extends FlxState {
 	}
 
 	private function resetCombo() {
+		if (Statics.CurrentCombo == Statics.MaxCombo) {
+			Bitlytics.Instance().Queue("max_combo", Statics.CurrentCombo);
+		}
+
 		Statics.CurrentCombo = 0;
 		FmodManager.PlaySoundOneShot(FmodSFX.ComboLost);
 		FmodManager.SetEventParameterOnSong("Miss", 1);

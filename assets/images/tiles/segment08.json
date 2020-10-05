@@ -85,20 +85,10 @@
           "values": {"speed": 1}
         },
         {
-          "name": "fastShip",
-          "id": 2,
-          "_eid": "87444312",
-          "x": 240,
-          "y": 980,
-          "originX": 0,
-          "originY": 0,
-          "values": {"speed": 2}
-        },
-        {
           "name": "slowShip",
           "id": 3,
           "_eid": "87449373",
-          "x": 160,
+          "x": 320,
           "y": 980,
           "originX": 0,
           "originY": 0,
