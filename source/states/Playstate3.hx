@@ -128,7 +128,7 @@ class PlayState3 extends FlxState {
 		level = new Level(defaultBpm, defaultPixPerBeat);
 		// level.initTestBeatEvents(laneCoords);
 		level.addSegmentQueuedListener(parseBeatEvents);
-		level.loadOgmoMap();
+		level.loadOgmoMap(3);
 		level.addToState(this);
 		// level.queueEndOfLevel();
 
