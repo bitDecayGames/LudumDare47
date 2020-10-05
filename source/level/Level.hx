@@ -10,10 +10,8 @@ import flixel.FlxG;
 import flixel.FlxObject;
 
 class Level {
-	public var bpm: Float = 0.0;
-	public var pixelsPerBeat: Int = 0;
-
-	public var beatEvents:Array<BeatEvent> = [];
+	public var bpm:Float = 0.0;
+	public var pixelsPerBeat:Int = 0;
 
 	public var nextSegmentToLoad = -1;
 
@@ -27,7 +25,12 @@ class Level {
 	public var lastRewind:Bool = false;
 	public var rewind:Bool = false;
 
-	public function new(bpm: Float, pixelsPerBeat: Int) {
+	var currentBeat:Int = 0;
+	var farthestBeat:Int = 0;
+
+	var segmentQueuedCallbacks:Array<Array<BeatEvent>->Void> = [];
+
+	public function new(bpm:Float, pixelsPerBeat:Int) {
 		this.bpm = bpm;
 		this.pixelsPerBeat = pixelsPerBeat;
 
@@ -35,7 +38,12 @@ class Level {
 		background.loadGraphic(AssetPaths.nebula0__png, false, 560, 1260, true);
 	}
 
-    public function initDefaultBeatEvents(laneCoords: Array<Float>) {
+	public function addSegmentQueuedListener(callbackFn:Array<BeatEvent>->Void) {
+		segmentQueuedCallbacks.push(callbackFn);
+	}
+
+	public function initTestBeatEvents(laneCoords:Array<Float>) {
+		var beatEvents:Array<BeatEvent> = [];
 		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[0], 0)));
 		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[1], 0)));
 		beatEvents.push(new BeatEvent(10, 1, new Ship(laneCoords[3], 0)));
@@ -75,9 +83,10 @@ class Level {
 		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[1], 0)));
 		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[3], 0)));
 		beatEvents.push(new BeatEvent(55, 1, new Ship(laneCoords[4], 0)));
+		dispatchSegmentQueuedEvent(beatEvents);
 	}
 
-	public function addToState(state: FlxState) {
+	public function addToState(state:FlxState) {
 		state.add(background);
 
 		for (ls in levelSegments) {
@@ -93,6 +102,8 @@ class Level {
 			AssetPaths.segment02__json,
 			AssetPaths.segment03__json,
 			AssetPaths.segment04__json,
+			AssetPaths.segment05__json,
+			AssetPaths.segment06__json,
 		];
 		for (s in segments) {
 			var ts = new LevelSegment();
@@ -100,22 +111,14 @@ class Level {
 			levelSegments.push(ts);
 		}
 
-		// TODO May not need to do this
-		// FlxG.worldBounds.set(0, 0, walls.width, walls.height);
+		queueSegmentIfNeeded(rewind);
+	}
 
-		// map.loadEntities(function loadEntity(entity:EntityData) {
-		// 	switch (entity.name) {
-		// 		case "Ship":
-		// 			var beat = Std.int(entity.y / pixelsPerBeat);
-		// 			var speed = 1; // TODO Will this be on entity metadata?
-		// 			beatEvents.push(new BeatEvent(beat, speed, new Ship(entity.x, 0)));
-		// 			return;
-		// 		default:
-		// 			throw 'Unrecognized entity name: ${entity.name}';
-		// 	}
-		// }, "Entities");
-
-		queueSegmentIfNeeded(rewind);	
+	public function setBeat(value:Int) {
+		currentBeat = value;
+		if (value > farthestBeat) {
+			farthestBeat = value;
+		}
 	}
 
 	public function update(elapsed:Float) {
@@ -178,6 +181,7 @@ class Level {
 			activeSegment = levelSegments[nextSegmentNum(rewind)];
 			activeSegment.revive();
 			activeSegment.setY(-activeSegment.getHeight() + FlxG.height);
+			dispatchSegmentQueuedEvent(activeSegment.generateBeatEvents(currentBeat, pixelsPerBeat));
 		}
 
 		if (queuedSegment == null) {
@@ -188,7 +192,19 @@ class Level {
 				queuedSegment.setY(activeSegment.getY() + activeSegment.getHeight());
 			} else {
 				queuedSegment.setY(activeSegment.getY() - queuedSegment.getHeight());
+				dispatchSegmentQueuedEvent(queuedSegment.generateBeatEvents(currentBeat, pixelsPerBeat));
 			}
+		}
+	}
+
+	private function dispatchSegmentQueuedEvent(events:Array<BeatEvent>) {
+		// Do not populate more events if we already have them
+		if (currentBeat > 0 && currentBeat <= farthestBeat) {
+			return;
+		}
+
+		for (fn in segmentQueuedCallbacks) {
+			fn(events);
 		}
 	}
 
