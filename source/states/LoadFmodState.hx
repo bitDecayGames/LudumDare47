@@ -1,5 +1,7 @@
 package states;
 
+import flixel.system.scaleModes.RatioScaleMode;
+import flixel.system.scaleModes.FillScaleMode;
 import flixel.util.FlxColor;
 import flixel.text.FlxText;
 import flixel.FlxG;
@@ -11,6 +13,7 @@ import flixel.FlxState;
  */
 class LoadFmodState extends FlxState {
 	override public function create():Void {
+		FlxG.scaleMode = new RatioScaleMode();
 		FmodManager.Initialize();
 
 		var loadingText = new FlxText(0, 0, "Loading...");
