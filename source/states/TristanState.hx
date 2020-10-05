@@ -23,7 +23,7 @@ class TristanState extends FlxState
 	var shader = new MapShader();
 	var nextSliderY:Int;
 	var xPos:Float;
-	var lightRadius:Float;
+	var yPos:Float;
 
 	var currentBeat:Int = 0;
 	var beatEvents:Array<BeatEvent> = [];
@@ -65,21 +65,22 @@ class TristanState extends FlxState
 		var xPosSlider:FlxSlider = new FlxSlider(this, "xPos", FlxG.width - 180, UI_POS_Y + 50, 0, 1, 150);
 		xPosSlider.nameLabel.text = "Light Source X";
 
-		var lightRadiusSlider:FlxSlider = new FlxSlider(this, "lightRadius", FlxG.width - 180, UI_POS_Y + 100, 0, 1, 150);
-		lightRadiusSlider.nameLabel.text = "Light Radius";
+		var yPosSlider:FlxSlider = new FlxSlider(this, "yPos", FlxG.width - 180, UI_POS_Y + 100, 0, 1, 150);
+		yPosSlider.nameLabel.text = "Light Source Y";
 
 		// Add all the stuff in correct order
 		add(uiBackground);
 		add(title);
 		add(xPosSlider);
-		add(lightRadiusSlider);
+		add(yPosSlider);
 	}
 
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		this.shader.lights.value = [xPos, 0.5];
-		this.shader.fireRadius.value = [lightRadius];
+		this.shader.lightPos1.value = [0.5, 0.25];
+		this.shader.lightPos2.value = [xPos, yPos];
+		this.shader.fireRadius.value = [0.2];
 
 		FmodManager.Update();
 
