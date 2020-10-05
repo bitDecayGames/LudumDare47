@@ -7,6 +7,7 @@ import flixel.tile.FlxTilemap;
 import flixel.FlxState;
 import flixel.FlxSprite;
 import flixel.FlxG;
+import flixel.FlxObject;
 
 class Level {
 	public var bpm: Float = 0.0;
@@ -18,9 +19,12 @@ class Level {
 
 	public var nextSegmentToLoad = 0;
 	public var trackSegments:Array<FlxTilemap> = [];
+	public var decorationSegments:Array<FlxTilemap> = [];
 
 	public var activeTrack:FlxTilemap;
+	public var activeDecoration:FlxTilemap;
 	public var queuedTrack:FlxTilemap;
+	public var queuedDecoration:FlxTilemap;
 
 	public var background:FlxSprite;
 	public var groundSpeed:Float = 4;
@@ -83,6 +87,9 @@ class Level {
 		for (t in trackSegments) {
 			state.add(t);
 		}
+		for (d in decorationSegments) {
+			state.add(d);
+		}
 	}
 
 	public function loadOgmoMap() {
@@ -95,10 +102,6 @@ class Level {
 
 		// TODO May not need to do this
 		// FlxG.worldBounds.set(0, 0, walls.width, walls.height);
-		// groundType = map.loadTilemap(AssetPaths.groundTypes__png, "GroundType");
-		// groundType.setTileProperties(1, FlxObject.ANY, setPlayerGroundType("concrete"));
-		// groundType.setTileProperties(2, FlxObject.ANY, setPlayerGroundType("grass"));
-		// groundType.setTileProperties(3, FlxObject.ANY, setPlayerGroundType("metal"));
 
 		// map.loadEntities(function loadEntity(entity:EntityData) {
 		// 	switch (entity.name) {
@@ -119,7 +122,11 @@ class Level {
 		var map = new FlxOgmo3Loader(ogmoFile, levelFile);
 
 		var track = map.loadTilemap(AssetPaths.tiles__png, "Track");
+		track.setTileProperties(1, FlxObject.ANY);
 		addSegment(track);
+
+		var decoration = map.loadTilemap(AssetPaths.tiles__png, "lanesAndLines");
+		addDecoration(decoration);
 	}
 
 	private function addSegment(s:FlxTilemap) {
@@ -128,30 +135,51 @@ class Level {
 		trackSegments.push(s);
 	}
 
+	private function addDecoration(d:FlxTilemap) {
+		d.kill();
+		d.x -= xAlign;
+		decorationSegments.push(d);
+	}
+
 	public function update(elapsed:Float) {
 		var bps = bpm / 60;
 		var dy = elapsed * bps * pixelsPerBeat * groundSpeed;
 
 		if (rewind) {
 			activeTrack.y -= dy;
+			activeDecoration.y -= dy;
 			queuedTrack.y -= dy;
+			queuedDecoration.y -= dy;
 
 			if (activeTrack.y < -activeTrack.height) {
 				activeTrack.kill();
 				activeTrack = queuedTrack;
 				queuedTrack = null;
 			}
+
+			if (activeDecoration.y < -activeDecoration.height) {
+				activeDecoration.kill();
+				activeDecoration = queuedDecoration;
+				queuedDecoration = null;
+			}
 		} else {
 			activeTrack.y += dy;
+			activeDecoration.y += dy;
 			queuedTrack.y += dy;
+			queuedDecoration.y += dy;
 
 			if (activeTrack.y > FlxG.height) {
 				activeTrack.kill();
 				activeTrack = queuedTrack;
 				queuedTrack = null;
 			}
-		}
 
+			if (activeDecoration.y > FlxG.height) {
+				activeDecoration.kill();
+				activeDecoration = queuedDecoration;
+				queuedDecoration = null;
+			}
+		}
 
 		queueSegmentIfNeeded(rewind);
 	}
@@ -165,6 +193,12 @@ class Level {
 			activeTrack.y = -activeTrack.height + FlxG.height;
 		}
 
+		if (activeDecoration == null) {
+			// first decoration
+			activeDecoration = decorationSegments[nextSegmentToLoad++ % decorationSegments.length];
+			activeDecoration.revive();
+			activeDecoration.y = -activeDecoration.height + FlxG.height;
+		}
 
 		if (queuedTrack == null) {
 			queuedTrack = trackSegments[nextSegmentNum(rewind)];
@@ -174,6 +208,17 @@ class Level {
 				queuedTrack.y = activeTrack.y + activeTrack.height;
 			} else {
 				queuedTrack.y = activeTrack.y - queuedTrack.height;
+			}
+		}
+
+		if (queuedDecoration == null) {
+			queuedDecoration = decorationSegments[nextSegmentNum(rewind)];
+			queuedDecoration.revive();
+
+			if (rewind) {
+				queuedDecoration.y = activeDecoration.y + activeDecoration.height;
+			} else {
+				queuedDecoration.y = activeDecoration.y - queuedDecoration.height;
 			}
 		}
 	}
