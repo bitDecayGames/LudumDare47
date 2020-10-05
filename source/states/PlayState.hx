@@ -189,6 +189,7 @@ class PlayState extends FlxState {
 		// add(beatSpeaker);
 
 		beatTracker = new BeatTracker(this, Std.int(defaultBpm), FlxG.height - 30, 70);
+		trace("Playing Level0New song");
 		FmodManager.PlaySong(FmodSongs.Level0New);
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 	}
@@ -312,6 +313,7 @@ class PlayState extends FlxState {
 			allowBeats = false;
 			FmodManager.StopSong();
 			var fmodRewind = FmodManager.PlaySoundWithReference(FmodSFX.Rewind);
+			trace("Playstate: Rewind sound ID: " + fmodRewind);
 			level.groundSpeed = 0;
 			// cancel any in-progress tweens
 			for (t in tweens) {
@@ -335,6 +337,7 @@ class PlayState extends FlxState {
 					FmodManager.SetEventParameterOnSong("Miss", 0);
 					FmodManager.SetEventParameterOnSong("Silence", 0);
 					FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState());
+					FmodManager.ClearAllCallbacks();
 				}, FmodCallback.STOPPED);
 			}, FmodCallback.TIMELINE_MARKER);
 		}, 250);
@@ -349,14 +352,11 @@ class PlayState extends FlxState {
 			level.queueEndOfLevel();
 		}
 
-		if (currentBeat >= 134){
+		if (currentBeat >= 134 || FlxG.keys.justPressed.N) {
 			FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState2());
 		}
 
 		shader.iTime.value[0] += elapsed;
-		if (FlxG.keys.justPressed.N) {
-			FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState());
-		}
 		if (FlxG.keys.justPressed.P) {
 			isShaderActive = !isShaderActive;
 			if (isShaderActive) {
