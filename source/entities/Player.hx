@@ -13,9 +13,9 @@ using extensions.FlxObjectExt;
 class Player extends FlxSpriteGroup {
 	var actions = new Actions();
 
-	var hitbox = new FlxPoint(45, 90);
+	var hitbox = new FlxPoint(45, 80);
 
-	var noseBuffer = 5;
+	var noseBuffer = 15;
 
 	public var ship:ParentedSprite;
 
