@@ -345,7 +345,11 @@ class PlayState extends FlxState {
 		var timestamp = Date.now().getTime();
 		FmodManager.Update();
 
-		if (currentBeat >= 135){
+		if (currentBeat == 100) {
+			level.queueEndOfLevel();
+		}
+
+		if (currentBeat >= 134){
 			FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState2());
 		}
 

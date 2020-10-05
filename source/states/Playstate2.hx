@@ -1,6 +1,9 @@
 package states;
 
 import states.Playstate3.PlayState3;
+import states.Playstate2.PlayState2;
+import entities.Light;
+import flixel.math.FlxPoint;
 import com.bitdecay.analytics.Bitlytics;
 import haxefmod.flixel.FmodFlxUtilities;
 import widgets.BeatTracker;
@@ -55,7 +58,6 @@ class PlayState2 extends FlxState {
 
 	var comboTitle:FlxText;
 	var comboText:FlxText;
-	var comboCounter:Int = 0;
 	var maxComboText:FlxText;
 
 	var filters:Array<BitmapFilter> = new Array<BitmapFilter>();
@@ -128,12 +130,15 @@ class PlayState2 extends FlxState {
 		level.addSegmentQueuedListener(parseBeatEvents);
 		level.loadOgmoMap();
 		level.addToState(this);
+		// level.queueEndOfLevel();
+
+		level.addBanners();
 
 		comboTitle = new FlxText(10, FlxG.height-150, 1000, "Combo", 25);
 		add(comboTitle);
 		comboText = new FlxText(10, FlxG.height-115, 1000, "Current:0", 20);
 		add(comboText);
-		maxComboText = new FlxText(10, FlxG.height-85, 1000, "Max:0", 20);
+		maxComboText = new FlxText(10, FlxG.height-85, 1000, "Best:0", 20);
 		add(maxComboText);
 
 		loadRetryText();
@@ -181,10 +186,8 @@ class PlayState2 extends FlxState {
 		playerGroup.add(player);
 		add(playerGroup);
 
-		beatSpeaker = new BeatSpeaker();
-		add(beatSpeaker);
-
-		player.ship.allowCollisions = 0;
+		// beatSpeaker = new BeatSpeaker();
+		// add(beatSpeaker);
 
 		beatTracker = new BeatTracker(this, Std.int(defaultBpm), FlxG.height - 30, 70);
 		FmodManager.PlaySong(FmodSongs.Level1);
@@ -221,7 +224,7 @@ class PlayState2 extends FlxState {
 
 		beatTracker.SpawnLines();
 
-		beatSpeaker.handleBeat();
+		// beatSpeaker.handleBeat();
 		beatTime = Date.now().getTime();
 		beatAwaitingProcessing = true;
 
@@ -288,10 +291,14 @@ class PlayState2 extends FlxState {
 		};
 
 		add(shipExplosion);
-		comboCounter = 0;
+		Statics.CurrentCombo = 0;
 	}
 
-	private function handlePlayerCarOverlap(playerPs:ParentedSprite, ai:ParentedSprite) {
+	private function handlePlayerShipOverlap(playerPs:ParentedSprite, ai:ParentedSprite) {
+		if (ai.allowCollisions == 0) {
+			return;
+		}
+
 		disableParentedSprite(ai);
 
 		killPlayer(playerPs);
@@ -328,7 +335,7 @@ class PlayState2 extends FlxState {
 				FmodManager.RegisterCallbacksForSound(fmodRewind, () -> {
 					FmodManager.SetEventParameterOnSong("Miss", 0);
 					FmodManager.SetEventParameterOnSong("Silence", 0);
-					FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState());
+					FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState2());
 				}, FmodCallback.STOPPED);
 			}, FmodCallback.TIMELINE_MARKER);
 		}, 250);
@@ -339,13 +346,17 @@ class PlayState2 extends FlxState {
 		var timestamp = Date.now().getTime();
 		FmodManager.Update();
 
-		if (currentBeat >= 10){
+		if (currentBeat == 180) {
+			level.queueEndOfLevel();
+		}
+
+		if (currentBeat >= 204){
 			FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState3());
 		}
 
 		shader.iTime.value[0] += elapsed;
 		if (FlxG.keys.justPressed.N) {
-			FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState2());
+			FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState());
 		}
 		if (FlxG.keys.justPressed.P) {
 			isShaderActive = !isShaderActive;
@@ -387,16 +398,42 @@ class PlayState2 extends FlxState {
 			_txtPressSpace.visible = false;
 		}
 
-		FlxG.overlap(playerGroup, beaters, handlePlayerCarOverlap);
+		FlxG.overlap(playerGroup, beaters, handlePlayerShipOverlap);
 
-		comboText.text = "Current: " + comboCounter;
-		Statics.MaxCombo = Math.max(Statics.MaxCombo, comboCounter);
-		maxComboText.text = "Max: " + Statics.MaxCombo;
+		comboText.text = "Current: " + Statics.CurrentCombo;
+		Statics.MaxCombo = Math.max(Statics.MaxCombo, Statics.CurrentCombo);
+		maxComboText.text = "Best: " + Statics.MaxCombo;
 
 		// Level updates
 		level.update(elapsed);
 		if (level.activeSegment != null) {
-			FlxG.collide(playerGroup, level.activeSegment.getTrack(), handlePlayerWallOverlap);
+			var walls = level.activeSegment.getTrack();
+			FlxG.collide(playerGroup, walls, handlePlayerWallOverlap);
+		}
+
+
+		var screenCenter = new FlxPoint(FlxG.width / 2, FlxG.height / 2);
+		var lps:Array<FlxPoint> = [];
+		for (p in level.activeSegment.lights) {
+			add(p);
+			if (p.getMidpoint().distanceTo(screenCenter) < FlxG.height + 100) {
+				lps.push(p.getMidpoint());
+			}
+		}
+		for (p in level.queuedSegment.lights) {
+			add(p);
+			if (p.getMidpoint().distanceTo(screenCenter) < FlxG.height + 100) {
+				lps.push(p.getMidpoint());
+			}
+		}
+
+		if (lps.length > 0) {
+			trace("" + lps.length + " lights in range");
+		}
+
+		player.setLightPositions(lps);
+		for (ship in beaters) {
+			ship.setLightPositions(lps);
 		}
 	}
 
@@ -408,7 +445,7 @@ class PlayState2 extends FlxState {
 
 		if (diff < timePerBeat / 4) {
 			TextPop.pop(Std.int(player.x), Std.int(player.y), "Great!", new FlyBack(-300, 1), 25);
-			comboCounter++;
+			Statics.CurrentCombo++;
 		} else if (diff < timePerBeat / 3) {
 			TextPop.pop(Std.int(player.x), Std.int(player.y), "Miss", new FlyBack(-300, 1), 25);
 			resetCombo();
@@ -431,7 +468,9 @@ class PlayState2 extends FlxState {
 		parentedSprite.parent.visible = true;
 		parentedSprite.active = true;
 		parentedSprite.parent.active = true;
-		parentedSprite.allowCollisions = FlxObject.ANY;
+		if (!parentedSprite.skipResets) {
+			parentedSprite.allowCollisions = FlxObject.ANY;
+		}
 	}
 
 	private function loadRetryText() {
@@ -453,7 +492,7 @@ class PlayState2 extends FlxState {
 	}
 
 	private function resetCombo() {
-		comboCounter = 0;
+		Statics.CurrentCombo = 0;
 		FmodManager.PlaySoundOneShot(FmodSFX.ComboLost);
 		FmodManager.SetEventParameterOnSong("Miss", 1);
 	}
