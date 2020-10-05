@@ -263,7 +263,7 @@ class PlayState extends FlxState {
 		}
 	}
 
-	private function alignPlayerToLane() {
+	private function alignPlayerToLane():Bool {
 		var newPlayerLane = Std.int(Math.max(0, Math.min(laneCoords.length-1, targetPlayerLane)));
 		if (newPlayerLane != playerLane) {
 			playerLane = newPlayerLane;
@@ -275,11 +275,14 @@ class PlayState extends FlxState {
 				player.y,
 				timePerBeat / 2
 				);
+			return true;
 		}
+		return false;
 	}
 
 	private function killPlayer(playerPs: ParentedSprite) {
 		disableParentedSprite(playerPs);
+		FmodManager.PlaySoundOneShot(FmodSFX.Explosion);
 		var shipExplosion:FlxSprite = new FlxSprite();
 		shipExplosion.loadGraphic(AssetPaths.shipExplode__png, true, 160, 980, true);
 		shipExplosion.setPosition(playerPs.x-50, playerPs.y-850);
@@ -292,7 +295,7 @@ class PlayState extends FlxState {
 		};
 
 		add(shipExplosion);
-		resetCombo();
+		comboCounter = 0;
 		TextPop.pop(Std.int(playerPs.x), Std.int(playerPs.y), "Pink Floyd'd", new FlyBack(-300, 1), 25);
 	}
 
@@ -349,6 +352,8 @@ class PlayState extends FlxState {
 					FmodManager.SetEventParameterOnSong("Silence", 0);
 					FmodManager.SetEventParameterOnSong("Miss", 0);
 					FmodManager.PlaySong(FmodSongs.Level1);
+					playerLane = 2;
+					player.x = laneCoords[playerLane] - player.width/2;
 					enableParentedSprite(player.ship);
 					FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
 					beaters.clear();
@@ -377,14 +382,16 @@ class PlayState extends FlxState {
 		if (playerTween == null || playerTween.finished) {
 			if (actions.left.check()) {
 				targetPlayerLane = playerLane - 1;
-				alignPlayerToLane();
-				calculateBeatScore(timestamp);
+				if(alignPlayerToLane() && player.active) {
+					calculateBeatScore(timestamp);
+				}
 			}
 
 			if (actions.right.check()) {
 				targetPlayerLane = playerLane + 1;
-				alignPlayerToLane();
-				calculateBeatScore(timestamp);
+				if(alignPlayerToLane() && player.active) {
+					calculateBeatScore(timestamp);
+				}
 			}
 		}
 
