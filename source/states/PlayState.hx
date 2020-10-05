@@ -59,7 +59,7 @@ class PlayState extends FlxState {
 	var vhsFilter:ShaderFilter;
 
 	var allowBeats:Bool = true;
-	
+
 	var allowSpawning:Bool = true;
 
 	// Failure text
@@ -321,7 +321,6 @@ class PlayState extends FlxState {
 					);
 				}
 
-				
 				FmodManager.RegisterCallbacksForSound(fmodRewind, ()->{
 					level.rewind = false;
 					allowBeats = true;
