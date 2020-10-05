@@ -187,6 +187,8 @@ class PlayState3 extends FlxState {
 		playerGroup.add(player);
 		add(playerGroup);
 
+		player.ship.allowCollisions = 0;
+
 		// beatSpeaker = new BeatSpeaker();
 		// add(beatSpeaker);
 
