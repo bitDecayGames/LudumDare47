@@ -19,16 +19,16 @@ class MapShader extends FlxShader {
 		uniform vec3 dayColor;
 		uniform vec3 fireColor;
 
+		uniform int numLights;
 		uniform float fireRadius;
-
 		uniform bool debugLoc;
 	
-		vec3 makeLight(vec2 lightPos)
+		vec3 makeLight(vec2 lightPos, float lightIntensity)
 		{
-			
-			float lightIntensity = 0.5;
 			vec3 darknessColor = vec3(0.0, 0.0, 0.0);
 			vec3 timeInfluence = mix(darknessColor, fireColor, lightIntensity);
+			
+			
 			float fireInfluence = fireRadius - distance(openfl_TextureCoordv, lightPos);
 			
 		
@@ -58,16 +58,30 @@ class MapShader extends FlxShader {
 
 			vec3 totalInfluence = mix(timeInfluence, fireColor, fireInfluence);
 
-			//gl_FragColor.rgb = gl_FragColor.rgb * totalInfluence;
 			return totalInfluence;
 		}
 
 
 		void main()
 		{
+			float lightIntensity = pow(0.5, 1.0 / float(numLights));
 			gl_FragColor = texture2D(bitmap, openfl_TextureCoordv);
-			gl_FragColor.rgb = gl_FragColor.rgb * makeLight(lightPos1);
-			gl_FragColor.rgb = gl_FragColor.rgb * makeLight(lightPos2);
+	
+			gl_FragColor.rgb = gl_FragColor.rgb * makeLight(lightPos1, lightIntensity);
+			if (numLights > 1)
+				gl_FragColor.rgb = gl_FragColor.rgb * makeLight(lightPos2, lightIntensity);
+			if (numLights > 2)
+				gl_FragColor.rgb = gl_FragColor.rgb * makeLight(lightPos2, lightIntensity);
+			if (numLights > 3)
+				gl_FragColor.rgb = gl_FragColor.rgb * makeLight(lightPos2, lightIntensity);
+			if (numLights > 4)
+				gl_FragColor.rgb = gl_FragColor.rgb * makeLight(lightPos2, lightIntensity);
+			if (numLights > 5)
+				gl_FragColor.rgb = gl_FragColor.rgb * makeLight(lightPos2, lightIntensity);
+			if (numLights > 6)
+				gl_FragColor.rgb = gl_FragColor.rgb * makeLight(lightPos2, lightIntensity);
+			if (numLights > 7)
+				gl_FragColor.rgb = gl_FragColor.rgb * makeLight(lightPos2, lightIntensity);
 			
 		}
 		
@@ -80,6 +94,7 @@ class MapShader extends FlxShader {
 		this.fireColor.value = [1.0, 1.0, 1.0];
 		this.fireRadius.value = [0.2];
 		this.lightPos1.value = [0, 0];
+		this.numLights.value = [2];
 		this.debugLoc.value = [false];
 	}
 }

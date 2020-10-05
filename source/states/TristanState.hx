@@ -28,7 +28,7 @@ class TristanState extends FlxState
 	var currentBeat:Int = 0;
 	var beatEvents:Array<BeatEvent> = [];
 	var renderEvents:Map<Int, Array<RenderEvent>> = new Map();
-
+	var numLights:Int = 2;
 
 	override public function create()
 	{
@@ -73,14 +73,31 @@ class TristanState extends FlxState
 		add(title);
 		add(xPosSlider);
 		add(yPosSlider);
+		//adjustLights();
 	}
 
+	private function adjustLights()
+	{
+		if (this.numLights == 1) {
+			this.numLights = 2;
+		}
+		else {
+			this.numLights = 1;
+		}
+		this.shader.numLights.value = [this.numLights];
+	}
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		this.shader.lightPos1.value = [0.5, 0.25];
-		this.shader.lightPos2.value = [xPos, yPos];
+		this.shader.lightPos1.value = [xPos, yPos];
+		this.shader.lightPos2.value = [0.5, 0.5];
 		this.shader.fireRadius.value = [0.2];
+
+		if (FlxG.keys.justPressed.L)
+		{
+			trace("numLights: ", this.numLights);
+			//adjustLights();
+		}
 
 		FmodManager.Update();
 
