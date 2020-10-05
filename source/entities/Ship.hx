@@ -113,8 +113,13 @@ class Ship extends FlxSpriteGroup {
 		}]);
 	}
 
+	private var refPoint = FlxPoint.get();
+
 	private function adjustPoint(p:FlxPoint):FlxPoint {
-		return new FlxPoint((p.x - body.x) / (body.frameWidth * 3), (p.y - body.y) / body.frameHeight);
+		refPoint = body.getPosition(refPoint);
+		refPoint.subtractPoint(body.offset);
+		var ret = new FlxPoint((p.x - refPoint.x) / (body.frameWidth * 3), (p.y - refPoint.y) / body.frameHeight);
+		return ret;
 	}
 
 	public function setAmbientRatio(ratio:Float) {

@@ -43,27 +43,27 @@ class MikeState extends FlxState {
 		add(ship1);
 
 		lights = new Array<FlxSprite>();
-		for (i in 0...4) {
-			lights.push(new FlxSprite(AssetPaths.lightbulb__png));
-			superTween(lights[i]);
-			add(lights[i]);
+		for (i in 0...2) {
+			addLight();
 		}
 
 		lightSource = new FlxSprite(AssetPaths.lightbulb__png);
 		lightSource2 = new FlxSprite(AssetPaths.lightbulb__png);
 
-		x = -180;
-		y = 0;
-		add(new FlxSprite(x, y, AssetPaths.player_n__png));
-		y += 150;
-		add(new FlxSprite(x, y, AssetPaths.ship0_n__png));
-		y += 150;
-		add(new FlxSprite(x, y, AssetPaths.ship1_n__png));
+		// x = -180;
+		// y = 0;
+		// add(new FlxSprite(x, y, AssetPaths.player_n__png));
+		// y += 150;
+		// add(new FlxSprite(x, y, AssetPaths.ship0_n__png));
+		// y += 150;
+		// add(new FlxSprite(x, y, AssetPaths.ship1_n__png));
 
-		add(lightSource);
+		// add(lightSource);
 		add(lightSource2);
 
 		FmodManager.PauseSong();
+
+		FlxG.watch.addMouse();
 	}
 
 	private function superTween(light:FlxSprite) {
@@ -73,9 +73,24 @@ class MikeState extends FlxState {
 			FlxG.random.float(0, FlxG.width),
 			FlxG.random.float(0, FlxG.height),
 			FlxG.random.float(0.5, 5)).onComplete = (t) -> {
-				// light.visible = FlxG.random.bool();
+				// light.visible = FlxG.random.bool(50);
 				superTween(light);
 			};
+	}
+
+	private function addLight() {
+		var newLight = new FlxSprite(AssetPaths.lightbulb__png);
+		lights.push(newLight);
+		superTween(newLight);
+		add(newLight);
+	}
+
+	private function removeLight() {
+		if (lights.length == 0) {
+			return;
+		}
+
+		lights.remove(cast(remove(lights[lights.length-1]), FlxSprite));
 	}
 
 	override public function update(elapsed:Float) {
@@ -90,14 +105,13 @@ class MikeState extends FlxState {
 
 		var arr = [for (l in lights) {
 			if (l.visible) {
-				l.getPosition();
+				l.getMidpoint();
 			}
 		}];
+		arr.insert(0, lightSource2.getMidpoint());
 		player.setLightPositions(arr);
 		ship0.setLightPositions(arr);
 		ship1.setLightPositions(arr);
-
-
 	}
 
 	private function moveLightbulb() {
@@ -151,6 +165,13 @@ class MikeState extends FlxState {
 		if (FlxG.keys.pressed.FIVE) {
 			lightSource.x = 0;
 			lightSource.y = FlxG.height;
+		}
+
+		if (FlxG.keys.justPressed.M) {
+			addLight();
+		}
+		if (FlxG.keys.justPressed.N) {
+			removeLight();
 		}
 	}
 }
