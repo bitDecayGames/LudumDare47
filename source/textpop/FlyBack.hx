@@ -1,5 +1,6 @@
 package textpop;
 
+import flixel.util.FlxColor;
 import flixel.tweens.FlxEase;
 import com.bitdecay.textpop.style.Style;
 import flixel.FlxObject;
@@ -16,6 +17,12 @@ class FlyBack implements Style {
 	}
 
 	public function Stylize(obj:FlxObject):FlxTween {
+		var missText = cast(obj, FlxText);
+		if (missText.text == "Miss") {
+			missText.color = FlxColor.RED;
+		} else {
+			missText.color = FlxColor.WHITE;
+		}
 		var flxObj:FlxObject = obj;
 		var tween = FlxTween.tween(flxObj, { y: flxObj.y - height, alpha: 0}, life, {ease: FlxEase.quadIn});
 		return tween;
