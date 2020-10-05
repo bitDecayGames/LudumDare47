@@ -186,8 +186,6 @@ class PlayState extends FlxState {
 		// beatSpeaker = new BeatSpeaker();
 		// add(beatSpeaker);
 
-		player.ship.allowCollisions = 0;
-
 		beatTracker = new BeatTracker(this, Std.int(defaultBpm), FlxG.height - 30, 70);
 		FmodManager.PlaySong(FmodSongs.Level0New);
 		FmodManager.RegisterCallbacksForSong(beat, FmodCallback.TIMELINE_BEAT);
