@@ -1,5 +1,6 @@
 package states;
 
+import haxefmod.flixel.FmodFlxUtilities;
 import widgets.BeatTracker;
 import flixel.FlxObject;
 import openfl.filters.BitmapFilter;
@@ -369,6 +370,9 @@ class PlayState extends FlxState {
 		FmodManager.Update();
 
 		shader.iTime.value[0] += elapsed;
+		if (FlxG.keys.justPressed.N) {
+			FmodFlxUtilities.TransitionToStateAndStopMusic(new PlayState());
+		}
 		if (FlxG.keys.justPressed.P)
 		{
 				isShaderActive = !isShaderActive;
