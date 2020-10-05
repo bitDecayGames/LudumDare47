@@ -132,8 +132,6 @@ class PlayState2 extends FlxState {
 		level.addToState(this);
 		// level.queueEndOfLevel();
 
-		level.addBanners();
-
 		comboTitle = new FlxText(10, FlxG.height-150, 1000, "Combo", 25);
 		add(comboTitle);
 		comboText = new FlxText(10, FlxG.height-115, 1000, "Current:0", 20);

@@ -90,6 +90,12 @@ class Level {
 		]);
 	}
 
+	public function addGoalBanner() {
+		dispatchSegmentQueuedEvent([
+			new BeatEvent(198, groundSpeed, new Ship(FlxG.width / 2, 0, 5)),
+		]);
+	}
+
 	public function addSegmentQueuedListener(callbackFn:Array<BeatEvent>->Void) {
 		segmentQueuedCallbacks.push(callbackFn);
 	}
