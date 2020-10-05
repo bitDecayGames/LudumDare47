@@ -52,8 +52,10 @@ class PlayState extends FlxState {
 	var screenBeatSpaces = (FlxG.height / 100);
 	var focusBeat = 5; // this is the beat where things align on screen (the one right in front of the player)
 
+	var comboTitle:FlxText;
 	var comboText:FlxText;
 	var comboCounter:Int = 0;
+	var maxComboText:FlxText;
 
 	var filters:Array<BitmapFilter> = new Array<BitmapFilter>();
 	var blurFilter:BlurFilter = new BlurFilter(2, 0, openfl.filters.BitmapFilterQuality.HIGH);
@@ -127,8 +129,12 @@ class PlayState extends FlxState {
 		level.loadOgmoMap();
 		level.addToState(this);
 
-		comboText = new FlxText(10, FlxG.height-45, 100, "0", 30);
+		comboTitle = new FlxText(10, FlxG.height-150, 1000, "Combo", 25);
+		add(comboTitle);
+		comboText = new FlxText(10, FlxG.height-115, 1000, "Current:0", 20);
 		add(comboText);
+		maxComboText = new FlxText(10, FlxG.height-85, 1000, "Max:0", 20);
+		add(maxComboText);
 
 		loadRetryText();
 
@@ -405,7 +411,9 @@ class PlayState extends FlxState {
 
 		FlxG.overlap(playerGroup, beaters, handlePlayerCarOverlap);
 
-		comboText.text = Std.string(comboCounter);
+		comboText.text = "Current: " + comboCounter;
+		Statics.MaxCombo = Math.max(Statics.MaxCombo, comboCounter);
+		maxComboText.text = "Max: " + Statics.MaxCombo;
 
 		// Level updates
 		level.update(elapsed);
