@@ -16,6 +16,7 @@ class Level {
 	public var nextSegmentToLoad = -1;
 
 	public var levelSegments:Array<LevelSegment> = [];
+	var endOfLevelSegments:Array<LevelSegment> = [];
 	public var activeSegment:LevelSegment;
 	public var queuedSegment:LevelSegment;
 
@@ -28,6 +29,8 @@ class Level {
 	var currentBeat:Int = 0;
 
 	var segmentQueuedCallbacks:Array<Array<BeatEvent>->Void> = [];
+
+	var endLevel = false;
 
 	public function new(bpm:Float, pixelsPerBeat:Int) {
 		this.bpm = bpm;
@@ -99,27 +102,42 @@ class Level {
 		for (ls in levelSegments) {
 			ls.addToState(state);
 		}
+
+		for (els in endOfLevelSegments) {
+			els.addToState(state);
+		}
 	}
 
 	public function loadOgmoMap() {
 		var ogmoFile = AssetPaths.test__ogmo;
 		var segments = [
 			AssetPaths.segment00__json,
+			AssetPaths.segment07__json,
+			AssetPaths.segment08__json,
+			AssetPaths.segment09__json,
 			AssetPaths.segment01__json,
 			AssetPaths.segment02__json,
 			AssetPaths.segment03__json,
 			AssetPaths.segment04__json,
 			AssetPaths.segment05__json,
 			AssetPaths.segment06__json,
-			AssetPaths.segment07__json,
-			AssetPaths.segment08__json,
-			AssetPaths.segment09__json,
 			AssetPaths.segment10__json,
 		];
 		for (s in segments) {
-			var ts = new LevelSegment();
-			ts.load(ogmoFile, s);
-			levelSegments.push(ts);
+			var ls = new LevelSegment();
+			ls.load(ogmoFile, s);
+			levelSegments.push(ls);
+		}
+
+		var fiveLaneSegments = [
+			AssetPaths.segment00__json,
+			AssetPaths.segment00__json,
+			AssetPaths.segment00__json,
+		];
+		for (fls in fiveLaneSegments) {
+			var ls = new LevelSegment();
+			ls.load(ogmoFile, fls);
+			endOfLevelSegments.push(ls);
 		}
 
 		queueSegmentIfNeeded(rewind);
@@ -173,14 +191,20 @@ class Level {
 			activeSegment = null;
 		}
 
-		if (activeSegment != null) {
-			activeSegment.kill();
-			activeSegment = null;
+		if (queuedSegment != null) {
+			queuedSegment.kill();
+			queuedSegment = null;
 		}
 
 		nextSegmentToLoad = -1;
 		lastRewind = rewind;
 		queueSegmentIfNeeded(rewind);
+	}
+
+	public function queueEndOfLevel() {
+		endLevel = true;
+		levelSegments = endOfLevelSegments;
+		nextSegmentToLoad = -1;
 	}
 
 	private function queueSegmentIfNeeded(rewind:Bool) {
@@ -191,7 +215,7 @@ class Level {
 			activeSegment.setY(-activeSegment.getHeight() + FlxG.height);
 		}
 
-		if (queuedSegment == null) {
+		if (queuedSegment == null) {	
 			queuedSegment = levelSegments[nextSegmentNum(rewind)];
 			queuedSegment.revive();
 
@@ -199,7 +223,9 @@ class Level {
 				queuedSegment.setY(activeSegment.getY() + activeSegment.getHeight());
 			} else {
 				queuedSegment.setY(activeSegment.getY() - queuedSegment.getHeight());
-				dispatchSegmentQueuedEvent(queuedSegment.generateBeatEvents(currentBeat, pixelsPerBeat));
+				if (!endLevel) {
+					dispatchSegmentQueuedEvent(queuedSegment.generateBeatEvents(currentBeat, pixelsPerBeat));
+				}
 			}
 		}
 	}
