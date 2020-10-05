@@ -113,6 +113,16 @@
           "originX": 0,
           "originY": 0,
           "values": {"speed": 1}
+        },
+        {
+          "name": "fastShip",
+          "id": 5,
+          "_eid": "87444312",
+          "x": 240,
+          "y": 4060,
+          "originX": 0,
+          "originY": 0,
+          "values": {"speed": 2}
         }
       ]
     },
