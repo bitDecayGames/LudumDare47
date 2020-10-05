@@ -1,5 +1,6 @@
 package states;
 
+import com.bitdecay.analytics.Bitlytics;
 import haxefmod.flixel.FmodFlxUtilities;
 import widgets.BeatTracker;
 import flixel.FlxObject;
@@ -491,10 +492,12 @@ class PlayState extends FlxState {
 	override public function onFocusLost():Void {
 		super.onFocusLost();
 		FmodManager.PauseSong();
+		Bitlytics.Instance().Pause();
 	}
 
 	override public function onFocus():Void {
 		super.onFocus();
 		FmodManager.UnpauseSong();
+		Bitlytics.Instance().Resume();
 	}
 }

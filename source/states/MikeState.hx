@@ -73,7 +73,7 @@ class MikeState extends FlxState {
 			FlxG.random.float(0, FlxG.width),
 			FlxG.random.float(0, FlxG.height),
 			FlxG.random.float(0.5, 5)).onComplete = (t) -> {
-				// light.visible = FlxG.random.bool(50);
+				light.visible = FlxG.random.bool(70);
 				superTween(light);
 			};
 	}

@@ -1,10 +1,10 @@
 {
 	"analytics": {
-		"name": "<PUT SIMPLIFIED GAME NAME HERE>",
+		"name": "pulsewave",
 		"influx": {
 			"api": "https://us-west-2-1.aws.cloud2.influxdata.com/api/v2/write",
 			"org": "13ecc65d2303c6d7",
-			"bucket": "<PUT BUCKET ID HERE>",
+			"bucket": "pulsewave",
 			"token": "token loaded from `assets/data/analytics_token.txt` so it is not committed to source control"
 		}
 	},
@@ -13,7 +13,7 @@
 			{
 				"sectionName": "Art",
 				"names": [
-					"Erik Meredeith"
+					"Erik Meredith"
 				]
 			},
 			{
@@ -26,13 +26,9 @@
 				"sectionName": "Programming",
 				"names": [
 					"Logan Moore",
+					"Jake Caban-Tomski",
+					"Tristan Havelick",
 					"Mike Wingfield"
-				]
-			},
-			{
-				"sectionName": "Tools",
-				"names": [
-					"Tim the Tool Man Taylor"
 				]
 			}
 		]
