@@ -76,20 +76,10 @@
       "entities": [
         {
           "name": "slowShip",
-          "id": 0,
-          "_eid": "87449373",
-          "x": 160,
-          "y": 2660,
-          "originX": 0,
-          "originY": 0,
-          "values": {"speed": 1}
-        },
-        {
-          "name": "slowShip",
           "id": 1,
           "_eid": "87449373",
-          "x": 320,
-          "y": 1820,
+          "x": 160,
+          "y": 980,
           "originX": 0,
           "originY": 0,
           "values": {"speed": 1}
@@ -98,8 +88,8 @@
           "name": "fastShip",
           "id": 2,
           "_eid": "87444312",
-          "x": 160,
-          "y": 1540,
+          "x": 80,
+          "y": 980,
           "originX": 0,
           "originY": 0,
           "values": {"speed": 2}
@@ -109,7 +99,7 @@
           "id": 3,
           "_eid": "87449373",
           "x": 400,
-          "y": 420,
+          "y": 3640,
           "originX": 0,
           "originY": 0,
           "values": {"speed": 1}
