@@ -288,7 +288,7 @@ class PlayState extends FlxState {
 		comboCounter = 0;
 	}
 
-	private function handlePlayerCarOverlap(playerPs:ParentedSprite, ai:ParentedSprite) {
+	private function handlePlayerShipOverlap(playerPs:ParentedSprite, ai:ParentedSprite) {
 		disableParentedSprite(ai);
 
 		killPlayer(playerPs);
@@ -380,7 +380,7 @@ class PlayState extends FlxState {
 			_txtPressSpace.visible = false;
 		}
 
-		FlxG.overlap(playerGroup, beaters, handlePlayerCarOverlap);
+		FlxG.overlap(playerGroup, beaters, handlePlayerShipOverlap);
 
 		comboText.text = "Current: " + comboCounter;
 		Statics.MaxCombo = Math.max(Statics.MaxCombo, comboCounter);
@@ -389,7 +389,8 @@ class PlayState extends FlxState {
 		// Level updates
 		level.update(elapsed);
 		if (level.activeSegment != null) {
-			FlxG.collide(playerGroup, level.activeSegment.getTrack(), handlePlayerWallOverlap);
+			var walls = level.activeSegment.getTrack();
+			FlxG.collide(playerGroup, walls, handlePlayerWallOverlap);
 		}
 	}
 
