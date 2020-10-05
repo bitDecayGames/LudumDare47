@@ -347,6 +347,15 @@ class PlayState extends FlxState {
 		}, 250);
 	}
 
+	private function handlePlayerWallOverlap(player: ParentedSprite, wall: FlxSprite) {
+		if (player.allowCollisions == 0 || wall.allowCollisions == 0) {
+			// ignore this. likely a collision with the jets
+		}
+		cast(player.parent, Player).kill();
+		resetCombo();
+		TextPop.pop(Std.int(player.x), Std.int(player.y), "Pink Floyd'd", new FlyBack(-300, 1), 25);
+	}
+
 	override public function update(elapsed:Float) {
 		super.update(elapsed);
 		var timestamp = Date.now().getTime();
@@ -393,9 +402,14 @@ class PlayState extends FlxState {
         }
 
 		FlxG.overlap(playerGroup, beaters, handlePlayerCarOverlap);
+
 		comboText.text = Std.string(comboCounter);
 
+		// Level updates
 		level.update(elapsed);
+		if (level.activeTrack != null) {
+			FlxG.collide(playerGroup, level.activeTrack, handlePlayerWallOverlap);
+		}
 	}
 
 	private function calculateBeatScore(ts:Float) {
