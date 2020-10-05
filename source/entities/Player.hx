@@ -38,7 +38,7 @@ class Player extends FlxSpriteGroup {
 		add(ship);
 		jets = new ParentedSprite(this);
 		jets.loadGraphic(AssetPaths.jets__png, true, 38, 80);
-		jets.setPosition(11, 106);
+		jets.setPosition(11-7.5, 106);
 		jets.allowCollisions = 0;
 
 		jets.animation.add("idle", [for(i in 0...11) i]);
