@@ -97,7 +97,7 @@
       "nodeGhost": true,
       "tags": [],
       "values": [
-        {"name": "1.0", "definition": "Float", "defaults": 0, "bounded": false, "min": 0, "max": 100}
+        {"name": "speed", "definition": "Float", "defaults": 1, "bounded": false, "min": 0, "max": 100}
       ]
     },
     {
@@ -135,7 +135,7 @@
       "nodeGhost": true,
       "tags": [],
       "values": [
-        {"name": "2.0", "definition": "Float", "defaults": 0, "bounded": false, "min": 0, "max": 100}
+        {"name": "speed", "definition": "Float", "defaults": 2, "bounded": false, "min": 0, "max": 100}
       ]
     },
     {

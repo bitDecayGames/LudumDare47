@@ -82,7 +82,7 @@
           "y": 3360,
           "originX": 0,
           "originY": 0,
-          "values": {"1.0": 0}
+          "values": {"speed": 1}
         },
         {
           "name": "slowShip",
@@ -92,7 +92,7 @@
           "y": 3920,
           "originX": 0,
           "originY": 0,
-          "values": {"1.0": 0}
+          "values": {"speed": 1}
         },
         {
           "name": "fastShip",
@@ -102,7 +102,7 @@
           "y": 1820,
           "originX": 0,
           "originY": 0,
-          "values": {"2.0": 0}
+          "values": {"speed": 2}
         },
         {
           "name": "slowShip",
@@ -112,7 +112,7 @@
           "y": 560,
           "originX": 0,
           "originY": 0,
-          "values": {"1.0": 0}
+          "values": {"speed": 1}
         }
       ]
     },

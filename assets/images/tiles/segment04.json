@@ -82,7 +82,7 @@
           "y": 2800,
           "originX": 0,
           "originY": 0,
-          "values": {"1.0": 0}
+          "values": {"speed": 1}
         },
         {
           "name": "fastShip",
@@ -92,7 +92,7 @@
           "y": 840,
           "originX": 0,
           "originY": 0,
-          "values": {"2.0": 0}
+          "values": {"speed": 2}
         },
         {
           "name": "slowShip",
@@ -102,7 +102,7 @@
           "y": 560,
           "originX": 0,
           "originY": 0,
-          "values": {"1.0": 0}
+          "values": {"speed": 1}
         }
       ]
     },
