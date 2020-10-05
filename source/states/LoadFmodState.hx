@@ -1,5 +1,6 @@
 package states;
 
+import states.Playstate3.PlayState3;
 import flixel.system.scaleModes.RatioScaleMode;
 import flixel.system.scaleModes.FillScaleMode;
 import flixel.util.FlxColor;
@@ -30,7 +31,7 @@ class LoadFmodState extends FlxState {
 			#elseif tristan
 			FlxG.switchState(new SplashScreenState());
 			#elseif tanner
-			FlxG.switchState(new MainMenuState());
+			FlxG.switchState(new PlayState3());
 			#elseif mike
 			FlxG.switchState(new MikeState());
 			#else

@@ -43,6 +43,8 @@ class Ship extends FlxSpriteGroup {
 					createBanner(AssetPaths.set__png);
 				case 4:
 					createBanner(AssetPaths.go__png);
+				case 5:
+					createBanner(AssetPaths.goal__png);
 				default:
 					createShip0();
 			}

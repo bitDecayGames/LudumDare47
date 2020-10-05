@@ -133,7 +133,7 @@ class PlayState3 extends FlxState {
 		level.addToState(this);
 		// level.queueEndOfLevel();
 
-		level.addBanners();
+		level.addGoalBanner();
 
 		comboTitle = new FlxText(10, FlxG.height-150, 1000, "Combo", 25);
 		add(comboTitle);
@@ -352,6 +352,7 @@ class PlayState3 extends FlxState {
 		}
 
 		if (currentBeat >= 204){
+			FmodManager.PlaySong(FmodSongs.Level2New);
 			FmodFlxUtilities.TransitionToStateAndStopMusic(new CreditsState());
 		}
 
