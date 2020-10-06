@@ -16,6 +16,7 @@ import flixel.FlxState;
 class LoadFmodState extends FlxState {
 	override public function create():Void {
 		FlxG.scaleMode = new RatioScaleMode();
+		FlxG.mouse.useSystemCursor = true;
 		FmodManager.Initialize();
 
 		var loadingText = new FlxText(0, 0, "Loading...");

@@ -31,8 +31,6 @@ class SplashScreenState extends FlxState {
 		fadeIn(index);
 
 		Configure.initAnalytics();
-
-		FlxG.mouse.useSystemCursor = true;
 	}
 
 	private function loadSplashImages(splashes:Array<SplashImage>) {

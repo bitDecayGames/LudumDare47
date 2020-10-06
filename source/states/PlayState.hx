@@ -345,6 +345,7 @@ class PlayState extends FlxState {
 
 	override public function update(elapsed:Float) {
 		super.update(elapsed);
+
 		var timestamp = Date.now().getTime();
 		FmodManager.Update();
 
